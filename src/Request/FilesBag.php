@@ -6,7 +6,7 @@
  * @author    Anton Titov (Wolfy-J)
  */
 
-namespace Spiral\Http\Request\Bags;
+namespace Spiral\Http\Request;
 
 use Psr\Http\Message\UploadedFileInterface;
 use Spiral\Files\Streams\StreamWrapper;

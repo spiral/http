@@ -6,7 +6,7 @@
  * @author    Anton Titov (Wolfy-J)
  */
 
-namespace Spiral\Http\Request\Bags;
+namespace Spiral\Http\Request;
 
 use Spiral\Http\Exceptions\DotNotFoundException;
 use Spiral\Http\Exceptions\InputException;
