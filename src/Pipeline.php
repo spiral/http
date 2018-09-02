@@ -130,7 +130,9 @@ class Pipeline implements RequestHandlerInterface, MiddlewareInterface
             $result = $this->scope->runScope([
                 Request::class  => $request,
                 Response::class => $response,
-            ], $this->target);
+            ], function () use ($request, $response) {
+                return ($this->target)($request, $response);
+            });
         } catch (\Throwable $e) {
             ob_get_clean();
             throw $e;
