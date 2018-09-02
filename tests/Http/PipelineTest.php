@@ -31,4 +31,19 @@ class PipelineTest extends TestCase
         $this->assertSame('OK', $response->getReasonPhrase());
         $this->assertSame('response', (string)$response->getBody());
     }
+
+    public function testHandle()
+    {
+        $pipeline = new Pipeline(new Container());
+
+        $handler = new CallableHandler(function () {
+            return "response";
+        }, new HttpCore(new Container()));
+
+        $response = $pipeline->process(new ServerRequest(), $handler);
+
+        $this->assertSame(200, $response->getStatusCode());
+        $this->assertSame('OK', $response->getReasonPhrase());
+        $this->assertSame('response', (string)$response->getBody());
+    }
 }
