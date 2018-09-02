@@ -1,0 +1,25 @@
+{
+  "name": "spiral/http",
+  "type": "library",
+  "description": "HTTP Dispatcher, Middleware Pipelines",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Anton Titov / Wolfy-J",
+      "email": "wolfy.jd@gmail.com"
+    }
+  ],
+  "require": {
+    "php": "^7.1",
+    "spiral/core": "^1.0"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "~7.0",
+    "mockery/mockery": "^1.1"
+  },
+  "autoload": {
+    "psr-4": {
+      "Spiral\\Http\\": "src/"
+    }
+  }
+}
