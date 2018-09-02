@@ -28,4 +28,14 @@ class PipelineTest extends TestCase
         $this->assertSame('OK', $response->getReasonPhrase());
         $this->assertSame('response', (string)$response->getBody());
     }
+
+    /**
+     * @expectedException \Spiral\Http\Exceptions\PipelineException
+     */
+    public function testInvalidTarget()
+    {
+        $pipeline = new Pipeline(new HttpCore(new Container()), new Container());
+
+        $pipeline->withTarget(false);
+    }
 }
