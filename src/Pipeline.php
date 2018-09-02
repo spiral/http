@@ -55,12 +55,9 @@ class Pipeline implements RequestHandlerInterface, MiddlewareInterface
      */
     public function withHandler(RequestHandlerInterface $target): self
     {
-        if ($this->position !== 0) {
-            throw new PipelineException("Unable to set pipeline target, pipeline has been started.");
-        }
-
         $pipeline = clone $this;
         $pipeline->target = $target;
+        $this->position = 0;
 
         return $pipeline;
     }
