@@ -10,6 +10,7 @@ namespace Spiral\Http\Tests;
 
 use PHPUnit\Framework\TestCase;
 use Spiral\Core\Container;
+use Spiral\Http\CallableHandler;
 use Spiral\Http\HttpCore;
 use Spiral\Http\Pipeline;
 use Zend\Diactoros\ServerRequest;
@@ -18,24 +19,16 @@ class PipelineTest extends TestCase
 {
     public function testTarget()
     {
-        $pipeline = new Pipeline(new HttpCore(new Container()), new Container());
+        $pipeline = new Pipeline(new Container());
 
-        $response = $pipeline->withTarget(function () {
+        $handler = new CallableHandler(function () {
             return "response";
-        })->handle(new ServerRequest());
+        }, new HttpCore(new Container()));
+
+        $response = $pipeline->withHandler($handler)->handle(new ServerRequest());
 
         $this->assertSame(200, $response->getStatusCode());
         $this->assertSame('OK', $response->getReasonPhrase());
         $this->assertSame('response', (string)$response->getBody());
-    }
-
-    /**
-     * @expectedException \Spiral\Http\Exceptions\PipelineException
-     */
-    public function testInvalidTarget()
-    {
-        $pipeline = new Pipeline(new HttpCore(new Container()), new Container());
-
-        $pipeline->withTarget(false);
     }
 }

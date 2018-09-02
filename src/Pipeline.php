@@ -8,7 +8,6 @@
 
 namespace Spiral\Http;
 
-use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Psr\Http\Server\MiddlewareInterface;
@@ -31,42 +30,33 @@ class Pipeline implements RequestHandlerInterface, MiddlewareInterface
     /** @var ScopeInterface */
     private $scope;
 
-    /** @var ResponseFactoryInterface */
-    private $responseFactory;
-
     /** @var int */
     private $position = 0;
 
-    /** @var callable|RequestHandlerInterface */
+    /** @var RequestHandlerInterface */
     private $target;
 
     /**
-     * @param ResponseFactoryInterface $responseFactory
-     * @param ScopeInterface           $scope
+     * @param ScopeInterface $scope
      */
-    public function __construct(ResponseFactoryInterface $responseFactory, ScopeInterface $scope)
+    public function __construct(ScopeInterface $scope)
     {
         $this->scope = $scope;
-        $this->responseFactory = $responseFactory;
     }
 
     /**
      * Configures pipeline with target endpoint.
      *
-     * @param callable|RequestHandlerInterface $target
+     * @param RequestHandlerInterface $target
      *
      * @return Pipeline
      *
      * @throws PipelineException
      */
-    public function withTarget($target): self
+    public function withHandler(RequestHandlerInterface $target): self
     {
         if ($this->position !== 0) {
             throw new PipelineException("Unable to set pipeline target, pipeline has been started.");
-        }
-
-        if (!is_callable($target) && !$target instanceof RequestHandlerInterface) {
-            throw new PipelineException("Target must be callable or instance of RequestHandlerInterface.");
         }
 
         $pipeline = clone $this;
@@ -85,7 +75,7 @@ class Pipeline implements RequestHandlerInterface, MiddlewareInterface
      */
     public function process(Request $request, RequestHandlerInterface $handler): Response
     {
-        return $this->withTarget($handler)->handle($request);
+        return $this->withHandler($handler)->handle($request);
     }
 
     /**
@@ -102,77 +92,8 @@ class Pipeline implements RequestHandlerInterface, MiddlewareInterface
             return $this->middlewares[$position]->process($request, $this);
         }
 
-        if ($this->target instanceof RequestHandlerInterface) {
+        return $this->scope->runScope([Request::class => $request], function () use ($request) {
             return $this->target->handle($request);
-        }
-
-        return $this->invokeTarget(
-            $request,
-            $this->responseFactory->createResponse(200)
-        );
-    }
-
-    /**
-     * @param Request  $request
-     * @param Response $response
-     *
-     * @return Response
-     * @throws \Throwable
-     */
-    protected function invokeTarget(Request $request, Response $response): Response
-    {
-        $outputLevel = ob_get_level();
-        ob_start();
-
-        $output = $result = null;
-
-        try {
-            $result = $this->scope->runScope([
-                Request::class  => $request,
-                Response::class => $response,
-            ], function () use ($request, $response) {
-                return ($this->target)($request, $response);
-            });
-        } catch (\Throwable $e) {
-            ob_get_clean();
-            throw $e;
-        } finally {
-            while (ob_get_level() > $outputLevel + 1) {
-                $output = ob_get_clean() . $output;
-            }
-        }
-
-        return $this->wrapResponse($response, $result, ob_get_clean() . $output);
-    }
-
-    /**
-     * Convert endpoint result into valid response.
-     *
-     * @param Response $response Initial pipeline response.
-     * @param mixed    $result   Generated endpoint output.
-     * @param string   $output   Buffer output.
-     *
-     * @return Response
-     */
-    private function wrapResponse(Response $response, $result = null, string $output = ''): Response
-    {
-        if ($result instanceof Response) {
-            if (!empty($output) && $result->getBody()->isWritable()) {
-                $result->getBody()->write($output);
-            }
-
-            return $result;
-        }
-
-        if (is_array($result) || $result instanceof \JsonSerializable) {
-            $response = $this->writeJson($response, $result);
-        } else {
-            $response->getBody()->write($result);
-        }
-
-        //Always glue buffered output
-        $response->getBody()->write($output);
-
-        return $response;
+        });
     }
 }
