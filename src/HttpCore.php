@@ -11,11 +11,21 @@ namespace Spiral\Http;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestFactoryInterface;
+use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Server\RequestHandlerInterface;
+use Spiral\Debug\Traits\BenchmarkTrait;
+use Zend\Diactoros\Request;
 use Zend\Diactoros\Response;
 use Zend\HttpHandlerRunner\Emitter\EmitterInterface;
 
-class HttpCore implements ResponseFactoryInterface
+class HttpCore implements
+    ServerRequestFactoryInterface,
+    ResponseFactoryInterface,
+    RequestHandlerInterface
 {
+    use BenchmarkTrait;
+
     /** @var ContainerInterface */
     private $container;
 
@@ -40,6 +50,19 @@ class HttpCore implements ResponseFactoryInterface
         $this->emitter = $emitter;
 
         return $this;
+    }
+
+    public function handle(ServerRequestInterface $request): ResponseInterface
+    {
+        // TODO: Implement handle() method.
+    }
+
+    public function createServerRequest(
+        string $method,
+        $uri,
+        array $serverParams = []
+    ): ServerRequestInterface {
+        return new Request($uri, $method);
     }
 
     /**
