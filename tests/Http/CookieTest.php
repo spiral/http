@@ -6,7 +6,7 @@
  * @author    Anton Titov (Wolfy-J)
  */
 
-namespace Spiral\Tests\Http;
+namespace Spiral\Http\Tests;
 
 use PHPUnit\Framework\TestCase;
 use Spiral\Http\Cookies\Cookie;
