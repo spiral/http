@@ -10,7 +10,7 @@ namespace Spiral\Http\Tests;
 
 use PHPUnit\Framework\TestCase;
 use Spiral\Core\Container;
-use Spiral\Http\CallableHandler;
+use Spiral\Http\Handler;
 use Spiral\Http\HttpCore;
 use Spiral\Http\Pipeline;
 use Zend\Diactoros\ServerRequest;
@@ -21,7 +21,7 @@ class PipelineTest extends TestCase
     {
         $pipeline = new Pipeline(new Container());
 
-        $handler = new CallableHandler(function () {
+        $handler = new Handler(function () {
             return "response";
         }, new HttpCore(new Container()));
 
@@ -36,7 +36,7 @@ class PipelineTest extends TestCase
     {
         $pipeline = new Pipeline(new Container());
 
-        $handler = new CallableHandler(function () {
+        $handler = new Handler(function () {
             return "response";
         }, new HttpCore(new Container()));
 

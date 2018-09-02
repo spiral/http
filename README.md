@@ -1,4 +1,4 @@
-HTTP Dispatcher, Middleware Pipelines
+HTTP Core, Secure Cookies, Middleware Pipeline
 ================================
 [![Latest Stable Version](https://poser.pugx.org/spiral/http/version)](https://packagist.org/packages/spiral/http)
 [![Build Status](https://travis-ci.org/spiral/http.svg?branch=master)](https://travis-ci.org/spiral/http)
