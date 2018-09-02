@@ -9,7 +9,7 @@
 namespace Spiral\Tests\Http;
 
 use PHPUnit\Framework\TestCase;
-use Spiral\Http\Cookie;
+use Spiral\Http\Cookies\Cookie;
 
 class CookieTest extends TestCase
 {

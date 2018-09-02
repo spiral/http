@@ -6,7 +6,7 @@
  * @author    Anton Titov (Wolfy-J)
  */
 
-namespace Spiral\Http;
+namespace Spiral\Http\Cookies;
 
 /**
  * Represent singular cookie header value with packing abilities.
