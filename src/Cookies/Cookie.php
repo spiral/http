@@ -151,7 +151,7 @@ final class Cookie
      *
      * @return string|null
      */
-    public function getValue()
+    public function getValue(): ?string
     {
         return $this->value;
     }
@@ -165,7 +165,7 @@ final class Cookie
      *
      * @return int|null
      */
-    public function getExpires()
+    public function getExpires(): ?int
     {
         if ($this->lifetime === null) {
             return null;
@@ -184,7 +184,7 @@ final class Cookie
      *
      * @return string|null
      */
-    public function getPath()
+    public function getPath(): ?string
     {
         return $this->path;
     }
@@ -197,7 +197,7 @@ final class Cookie
      *
      * @return string|null
      */
-    public function getDomain()
+    public function getDomain(): ?string
     {
         return $this->domain;
     }
