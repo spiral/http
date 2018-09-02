@@ -8,9 +8,6 @@
 
 namespace Spiral\Http;
 
-/**
- * Provides ability to be json serialized.
- */
 class Uri extends \Zend\Diactoros\Uri implements \JsonSerializable
 {
     /**
