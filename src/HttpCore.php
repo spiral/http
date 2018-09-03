@@ -87,6 +87,13 @@ class HttpCore implements ResponseFactoryInterface, RequestHandlerInterface
      */
     public function createResponse(int $code = 200, string $reasonPhrase = ''): ResponseInterface
     {
-        return (new Response('php://memory', $code, []))->withStatus($code, $reasonPhrase);
+        $response = new Response('php://memory', $code, []);
+        $response = $response->withStatus($code, $reasonPhrase);
+
+        foreach ($this->config->baseHeaders() as $header => $value) {
+            $response = $response->withAddedHeader($header, $value);
+        }
+
+        return $response;
     }
 }

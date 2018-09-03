@@ -28,7 +28,7 @@ trait MiddlewareTrait
      * Example (in bootstrap):
      * $this->http->pushMiddleware(new ProxyMiddleware());
      *
-     * @param callable|MiddlewareInterface $middleware
+     * @param MiddlewareInterface $middleware
      *
      * @return $this
      */
@@ -45,11 +45,11 @@ trait MiddlewareTrait
      * Example (in bootstrap):
      * $this->http->riseMiddleware(new ProxyMiddleware());
      *
-     * @param callable|MiddlewareInterface $middleware
+     * @param MiddlewareInterface $middleware
      *
      * @return $this
      */
-    public function riseMiddleware($middleware)
+    public function riseMiddleware(MiddlewareInterface $middleware)
     {
         array_unshift($this->middleware, $middleware);
 

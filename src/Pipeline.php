@@ -22,7 +22,7 @@ use Spiral\Http\Traits\MiddlewareTrait;
  * Spiral middlewares are similar to Laravel's one. However router and http itself
  * can be in used in zend expressive.
  */
-class Pipeline implements RequestHandlerInterface, MiddlewareInterface
+class Pipeline implements MiddlewareInterface
 {
     use MiddlewareTrait;
 
