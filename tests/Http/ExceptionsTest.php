@@ -9,6 +9,7 @@
 namespace Spiral\Http\Tests;
 
 use PHPUnit\Framework\TestCase;
+use Spiral\Http\Exceptions\ClientException;
 use Spiral\Http\Exceptions\ClientExceptions\BadRequestException;
 use Spiral\Http\Exceptions\ClientExceptions\ForbiddenException;
 use Spiral\Http\Exceptions\ClientExceptions\NotFoundException;
@@ -17,6 +18,12 @@ use Spiral\Http\Exceptions\ClientExceptions\UnauthorizedException;
 
 class ExceptionsTest extends TestCase
 {
+    public function testClientException()
+    {
+        $e = new ClientException();
+        $this->assertSame(400, $e->getCode());
+    }
+
     public function testNotFound()
     {
         $e = new NotFoundException();

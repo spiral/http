@@ -28,10 +28,10 @@ class ClientException extends HttpException
      * @param int    $code
      * @param string $message
      */
-    public function __construct($code = null, $message = "")
+    public function __construct(?int $code = null, string $message = "")
     {
         if (empty($code) && empty($this->code)) {
-            $code = self::NOT_FOUND;
+            $code = self::BAD_DATA;
         }
 
         if (empty($message)) {
