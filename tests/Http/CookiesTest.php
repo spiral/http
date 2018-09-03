@@ -91,6 +91,23 @@ class CookiesTest extends TestCase
         $this->assertSame('value', $this->container->get(EncrypterInterface::class)->decrypt($cookies['name']));
     }
 
+    public function testSetNotProtectedCookie()
+    {
+        $core = $this->getCore([CookiesMiddleware::class]);
+        $core->setHandler(function ($r) {
+            $this->container->get(CookieQueue::class)->set('PHPSESSID', 'value');
+            return 'all good';
+        });
+
+        $response = $this->get($core, '/');
+        $this->assertSame(200, $response->getStatusCode());
+        $this->assertSame('all good', (string)$response->getBody());
+
+        $cookies = $this->fetchCookies($response);
+        $this->assertArrayHasKey('PHPSESSID', $cookies);
+        $this->assertSame('value', $cookies['PHPSESSID']);
+    }
+
     public function testDecrypt()
     {
         $core = $this->getCore([CookiesMiddleware::class]);
