@@ -87,6 +87,37 @@ class HttpCoreTest extends TestCase
         $this->assertSame(["value"], $response->getHeader("hello"));
     }
 
+    public function testOutput()
+    {
+        $core = $this->getCore();
+
+        $core->setHandler(function ($req, $resp) {
+            echo "hello!";
+            return $resp->withAddedHeader("hello", "value");
+        });
+
+        $response = $core->handle(new ServerRequest());
+        $this->assertSame(["text/html;charset=UTF8"], $response->getHeader("Content-Type"));
+        $this->assertSame(["value"], $response->getHeader("hello"));
+        $this->assertSame("hello!", (string)$response->getBody());
+    }
+
+    public function testOutputAndWrite()
+    {
+        $core = $this->getCore();
+
+        $core->setHandler(function ($req, $resp) {
+            echo "hello!";
+            $resp->getBody()->write("world ");
+            return $resp->withAddedHeader("hello", "value");
+        });
+
+        $response = $core->handle(new ServerRequest());
+        $this->assertSame(["text/html;charset=UTF8"], $response->getHeader("Content-Type"));
+        $this->assertSame(["value"], $response->getHeader("hello"));
+        $this->assertSame("world hello!", (string)$response->getBody());
+    }
+
     public function testJson()
     {
         $core = $this->getCore();
