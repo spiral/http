@@ -66,15 +66,18 @@ class ConfigTest extends TestCase
         $this->assertSame('csrf-token', $c->csrfCookie());
         $this->assertSame(16, $c->csrfLength());
         $this->assertSame(86400, $c->csrfLifetime());
+        $this->assertSame(false, $c->csrfSecure());
 
         $c = new HttpConfig([
             'csrf' => [
                 'cookie' => 'csrf-token',
-                'length' => 16
+                'length' => 16,
+                'secure' => true
             ]
         ]);
 
         $this->assertSame(null, $c->csrfLifetime());
+        $this->assertSame(true, $c->csrfSecure());
     }
 
     public function testCookies()
