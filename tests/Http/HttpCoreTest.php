@@ -9,6 +9,10 @@
 namespace Spiral\Http\Tests;
 
 use PHPUnit\Framework\TestCase;
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Server\MiddlewareInterface;
+use Psr\Http\Server\RequestHandlerInterface;
 use Spiral\Core\Container;
 use Spiral\Http\CallableHandler;
 use Spiral\Http\Configs\HttpConfig;
@@ -155,6 +159,20 @@ class HttpCoreTest extends TestCase
         $this->assertSame(["application/json"], $response->getHeader("Content-Type"));
     }
 
+    public function testMiddleware()
+    {
+        $core = $this->getCore([HeaderMiddleware::class]);
+
+        $core->setHandler(function () {
+            return "hello?";
+        });
+
+        $response = $core->handle(new ServerRequest());
+        $this->assertSame(["text/html;charset=UTF8"], $response->getHeader("Content-Type"));
+        $this->assertSame(["Value*"], $response->getHeader("header"));
+        $this->assertSame("hello?", (string)$response->getBody());
+    }
+
     /**
      * @expectedException \RuntimeException
      */
@@ -194,5 +212,13 @@ class HttpCoreTest extends TestCase
             new Pipeline($this->container),
             $this->container
         );
+    }
+}
+
+class HeaderMiddleware implements MiddlewareInterface
+{
+    public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
+    {
+        return $handler->handle($request)->withAddedHeader("Header", "Value*");
     }
 }

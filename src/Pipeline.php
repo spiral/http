@@ -19,7 +19,7 @@ use Spiral\Http\Traits\MiddlewareTrait;
 /**
  * Pipeline used to pass request and response thought the chain of middleware.
  */
-class Pipeline implements MiddlewareInterface
+class Pipeline implements RequestHandlerInterface, MiddlewareInterface
 {
     use MiddlewareTrait;
 
