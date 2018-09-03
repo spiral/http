@@ -87,6 +87,23 @@ class HttpCoreTest extends TestCase
         $this->assertSame(["value"], $response->getHeader("hello"));
     }
 
+
+    /**
+     * @expectedException \RuntimeException
+     */
+    public function testPassException()
+    {
+        $core = $this->getCore();
+
+        $core->setHandler(function ($req, $resp) {
+            throw new \RuntimeException("error");
+        });
+
+        $response = $core->handle(new ServerRequest());
+        $this->assertSame(["text/html;charset=UTF8"], $response->getHeader("Content-Type"));
+        $this->assertSame(["value"], $response->getHeader("hello"));
+    }
+
     protected function getCore(array $middleware = []): HttpCore
     {
         return new HttpCore(
