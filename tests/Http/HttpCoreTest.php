@@ -87,6 +87,21 @@ class HttpCoreTest extends TestCase
         $this->assertSame(["value"], $response->getHeader("hello"));
     }
 
+    public function testJson()
+    {
+        $core = $this->getCore();
+
+        $core->setHandler(function () {
+            return [
+                "status"  => 404,
+                "message" => "not found"
+            ];
+        });
+
+        $response = $core->handle(new ServerRequest());
+        $this->assertSame(404, $response->getStatusCode());
+        $this->assertSame(["application/json"], $response->getHeader("Content-Type"));
+    }
 
     /**
      * @expectedException \RuntimeException
