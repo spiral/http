@@ -108,7 +108,7 @@ class InputManager implements SingletonInterface
      *
      * @return InputManager
      */
-    public function sliceRequest(string $prefix, bool $add = true): self
+    public function withPrefix(string $prefix, bool $add = true): self
     {
         $input = clone $this;
 
