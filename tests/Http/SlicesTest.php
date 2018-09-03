@@ -72,7 +72,6 @@ class SlicesTest extends TestCase
         $this->assertSame([], $this->input->withPrefix('other')->data->all());
     }
 
-
     public function testMultiple()
     {
         $this->container->bind(ServerRequestInterface::class, (new ServerRequest())->withParsedBody([
@@ -110,5 +109,8 @@ class SlicesTest extends TestCase
                 ]
             ]
         ], $input->data->all());
+
+        $this->assertSame('value', $input->data('array.key.name'));
+        $this->assertSame('value', $input->post('array.key.name'));
     }
 }

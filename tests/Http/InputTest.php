@@ -267,4 +267,34 @@ class InputManagerTest extends TestCase
         $this->container->bind(ServerRequestInterface::class, $request);
         $this->input->invalid;
     }
+
+
+    public function testShortcuts()
+    {
+        $this->container->bind(ServerRequestInterface::class, (new ServerRequest())->withParsedBody([
+            'array' => [
+                'key' => [
+                    'name' => 'value'
+                ]
+            ],
+            'name'  => 'xx'
+        ])->withQueryParams([
+            'name' => 'value',
+            'key'  => ['name' => 'hi']
+        ])->withAttribute('attr', 'value')->withCookieParams([
+            'cookie' => 'cookie-value'
+        ]));
+
+        $this->assertSame('value', $this->input->data('array.key.name'));
+        $this->assertSame('value', $this->input->post('array.key.name'));
+
+        $this->assertSame('value', $this->input->query('name'));
+        $this->assertSame('hi', $this->input->query('key.name'));
+
+        $this->assertSame('xx', $this->input->input('name'));
+        $this->assertSame('hi', $this->input->input('key.name'));
+        $this->assertSame('value', $this->input->attribute('attr'));
+
+        $this->assertSame('cookie-value', $this->input->cookie('cookie'));
+    }
 }
