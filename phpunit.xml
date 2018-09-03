@@ -13,7 +13,7 @@
 >
 
     <testsuites>
-        <testsuite name="HTTP Dispatcher, Middleware Pipelines">
+        <testsuite name="HTTP Core, Secure Cookies, CSRF protection, Middleware">
             <directory>./tests/</directory>
         </testsuite>
     </testsuites>
