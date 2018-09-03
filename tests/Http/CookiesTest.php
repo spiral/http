@@ -126,6 +126,44 @@ class CookiesTest extends TestCase
         $this->assertSame('cookie-value', (string)$response->getBody());
     }
 
+    public function testDecryptArray()
+    {
+        $core = $this->getCore([CookiesMiddleware::class]);
+        $core->setHandler(function ($r) {
+
+            /**
+             * @var ServerRequest $r
+             */
+            return $r->getCookieParams()['name'][0];
+        });
+
+        $value[] = $this->container->get(EncrypterInterface::class)->encrypt('cookie-value');
+
+        $response = $this->get($core, '/', [], [], ['name' => $value]);
+        $this->assertSame(200, $response->getStatusCode());
+        $this->assertSame('cookie-value', (string)$response->getBody());
+    }
+
+
+    public function testDecryptBroken()
+    {
+        $core = $this->getCore([CookiesMiddleware::class]);
+        $core->setHandler(function ($r) {
+
+            /**
+             * @var ServerRequest $r
+             */
+            return $r->getCookieParams()['name'];
+        });
+
+        $value = $this->container->get(EncrypterInterface::class)->encrypt('cookie-value') . 'BROKEN';
+
+        $response = $this->get($core, '/', [], [], ['name' => $value]);
+        $this->assertSame(200, $response->getStatusCode());
+        $this->assertSame('', (string)$response->getBody());
+    }
+
+
     public function testDelete()
     {
         $core = $this->getCore([CookiesMiddleware::class]);
