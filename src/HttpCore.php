@@ -14,7 +14,6 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestFactoryInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
-use Spiral\Debug\Traits\BenchmarkTrait;
 use Zend\Diactoros\Request;
 use Zend\Diactoros\Response;
 use Zend\HttpHandlerRunner\Emitter\EmitterInterface;
@@ -24,8 +23,6 @@ class HttpCore implements
     ResponseFactoryInterface,
     RequestHandlerInterface
 {
-    use BenchmarkTrait;
-
     /** @var ContainerInterface */
     private $container;
 

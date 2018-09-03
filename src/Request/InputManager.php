@@ -36,16 +36,13 @@ use Spiral\Http\Exceptions\InputException;
  */
 class InputManager implements SingletonInterface
 {
-    /**
-     * @var InputBag[]
-     */
+    /** @var InputBag[] */
     private $bags = [];
 
     /**
      * Prefix to add for each input request.
      *
      * @see self::withPrefix();
-     *
      * @var string
      */
     private $prefix = '';
