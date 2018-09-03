@@ -11,55 +11,72 @@ namespace Spiral\Http;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ResponseInterface;
-use Psr\Http\Message\ServerRequestFactoryInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
-use Zend\Diactoros\Request;
+use Spiral\Http\Configs\HttpConfig;
+use Spiral\Http\Exceptions\HttpException;
 use Zend\Diactoros\Response;
-use Zend\HttpHandlerRunner\Emitter\EmitterInterface;
 
-class HttpCore implements
-    ServerRequestFactoryInterface,
-    ResponseFactoryInterface,
-    RequestHandlerInterface
+class HttpCore implements ResponseFactoryInterface, RequestHandlerInterface
 {
-    /** @var ContainerInterface */
-    private $container;
+    /** @var HttpConfig */
+    protected $config;
 
-    /** @var \Zend\HttpHandlerRunner\Emitter\EmitterInterface */
-    private $emitter;
+    /** @var Pipeline */
+    protected $pipeline;
+
+    /** @var ContainerInterface */
+    protected $container;
+
+    /** @var RequestHandlerInterface */
+    protected $handler;
 
     /**
-     * @param ContainerInterface $container Https requests are executed in a container scopes.
+     * @param HttpConfig              $config
+     * @param Pipeline                $pipeline
+     * @param ContainerInterface|null $container
      */
-    public function __construct(ContainerInterface $container = null)
+    public function __construct(HttpConfig $config, Pipeline $pipeline, ContainerInterface $container = null)
     {
+        $this->config = $config;
+        $this->pipeline = $pipeline;
         $this->container = $container;
+
+        foreach ($this->config->baseMiddleware() as $middleware) {
+            $this->pipeline->pushMiddleware($this->container->get($middleware));
+        }
     }
 
     /**
-     * @param EmitterInterface $emitter
-     *
+     * @param RequestHandlerInterface|callable $handler
      * @return HttpCore
      */
-    public function setEmitter(EmitterInterface $emitter): HttpCore
+    public function setHandler($handler): self
     {
-        $this->emitter = $emitter;
+        if ($handler instanceof RequestHandlerInterface) {
+            $this->handler = $handler;
+        } elseif (is_callable($handler)) {
+            $this->handler = new CallableHandler($handler, $this);
+        } else {
+            throw new HttpException("Invalid handler is given, expects callable or RequestHandlerInterface.");
+        }
 
         return $this;
     }
 
+    /**
+     * @param ServerRequestInterface $request
+     * @return ResponseInterface
+     *
+     * @throws HttpException
+     */
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
-        // TODO: Implement handle() method.
-    }
+        if (empty($this->target)) {
+            throw new HttpException("Unable to run HttpCore, no handler is set.");
+        }
 
-    public function createServerRequest(
-        string $method,
-        $uri,
-        array $serverParams = []
-    ): ServerRequestInterface {
-        return new Request($uri, $method);
+        return $this->pipeline->withHandler($this->handler)->handle($request);
     }
 
     /**

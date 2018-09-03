@@ -33,7 +33,7 @@ class Pipeline implements RequestHandlerInterface, MiddlewareInterface
     private $position = 0;
 
     /** @var RequestHandlerInterface */
-    private $target;
+    private $handler;
 
     /**
      * @param ScopeInterface $scope
@@ -41,6 +41,24 @@ class Pipeline implements RequestHandlerInterface, MiddlewareInterface
     public function __construct(ScopeInterface $scope)
     {
         $this->scope = $scope;
+    }
+
+    /**
+     * Configures pipeline with target endpoint.
+     *
+     * @param RequestHandlerInterface $handler
+     *
+     * @return Pipeline
+     *
+     * @throws PipelineException
+     */
+    public function withHandler(RequestHandlerInterface $handler): self
+    {
+        $pipeline = clone $this;
+        $pipeline->handler = $handler;
+        $pipeline->position = 0;
+
+        return $pipeline;
     }
 
     /**
@@ -56,7 +74,7 @@ class Pipeline implements RequestHandlerInterface, MiddlewareInterface
      */
     public function handle(Request $request): Response
     {
-        if (empty($this->target)) {
+        if (empty($this->handler)) {
             throw new PipelineException("Unable to run pipeline, no handler given.");
         }
 
@@ -66,25 +84,7 @@ class Pipeline implements RequestHandlerInterface, MiddlewareInterface
         }
 
         return $this->scope->runScope([Request::class => $request], function () use ($request) {
-            return $this->target->handle($request);
+            return $this->handler->handle($request);
         });
-    }
-
-    /**
-     * Configures pipeline with target endpoint.
-     *
-     * @param RequestHandlerInterface $target
-     *
-     * @return Pipeline
-     *
-     * @throws PipelineException
-     */
-    public function withHandler(RequestHandlerInterface $target): self
-    {
-        $pipeline = clone $this;
-        $pipeline->target = $target;
-        $pipeline->position = 0;
-
-        return $pipeline;
     }
 }
