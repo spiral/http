@@ -159,6 +159,23 @@ class HttpCoreTest extends TestCase
         $this->assertSame(["application/json"], $response->getHeader("Content-Type"));
     }
 
+    public function testJsonSerializable()
+    {
+        $core = $this->getCore();
+
+        $core->setHandler(function () {
+            return new Json([
+                "status"  => 404,
+                "message" => "not found"
+            ]);
+        });
+
+        $response = $core->handle(new ServerRequest());
+        $this->assertSame(404, $response->getStatusCode());
+        $this->assertSame(["application/json"], $response->getHeader("Content-Type"));
+    }
+
+
     public function testMiddleware()
     {
         $core = $this->getCore([HeaderMiddleware::class]);
@@ -220,5 +237,20 @@ class HeaderMiddleware implements MiddlewareInterface
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
         return $handler->handle($request)->withAddedHeader("Header", "Value*");
+    }
+}
+
+class Json implements \JsonSerializable
+{
+    private $data;
+
+    public function __construct($data)
+    {
+        $this->data = $data;
+    }
+
+    public function jsonSerialize()
+    {
+        return $this->data;
     }
 }
