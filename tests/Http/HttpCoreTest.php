@@ -118,6 +118,25 @@ class HttpCoreTest extends TestCase
         $this->assertSame("world hello!", (string)$response->getBody());
     }
 
+    public function testNestedOutput()
+    {
+        $core = $this->getCore();
+
+        $core->setHandler(function () {
+            ob_start();
+            ob_start();
+            ob_start();
+            ob_start();
+
+            echo "hello!";
+            return "world ";
+        });
+
+        $response = $core->handle(new ServerRequest());
+        $this->assertSame(["text/html;charset=UTF8"], $response->getHeader("Content-Type"));
+        $this->assertSame("world hello!", (string)$response->getBody());
+    }
+
     public function testJson()
     {
         $core = $this->getCore();
