@@ -6,7 +6,7 @@
  * @author    Anton Titov (Wolfy-J)
  */
 
-namespace Spiral\Http\Cookies;
+namespace Spiral\Http\Middleware;
 
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
@@ -16,6 +16,8 @@ use Spiral\Core\ScopeInterface;
 use Spiral\Encrypter\EncrypterInterface;
 use Spiral\Encrypter\Exceptions\DecryptException;
 use Spiral\Http\Configs\HttpConfig;
+use Spiral\Http\Cookies\Cookie;
+use Spiral\Http\Cookies\Queue;
 
 /**
  * Middleware used to encrypt and decrypt cookies. Creates container scope for a cookie bucket.
@@ -50,14 +52,14 @@ class CookieMiddleware implements MiddlewareInterface
     public function process(Request $request, RequestHandlerInterface $handler): Response
     {
         //Aggregates all user cookies
-        $queue = new CookieQueue(
+        $queue = new Queue(
             $this->config->cookieDomain($request->getUri()),
             $request->getUri()->getScheme() == "https"
         );
 
         $response = $this->scope->runScope([], function () use ($request, $handler, $queue) {
             return $handler->handle(
-                $this->unpackCookies($request)->withAttribute(CookieQueue::ATTRIBUTE, $queue)
+                $this->unpackCookies($request)->withAttribute(Queue::ATTRIBUTE, $queue)
             );
         });
 
@@ -89,14 +91,14 @@ class CookieMiddleware implements MiddlewareInterface
     /**
      * Pack outcoming cookies with encrypted value.
      *
-     * @param Response    $response
-     * @param CookieQueue $queue
+     * @param Response $response
+     * @param Queue    $queue
      *
      * @return Response
      *
      * @throws \Spiral\Encrypter\Exceptions\EncryptException
      */
-    protected function packCookies(Response $response, CookieQueue $queue): Response
+    protected function packCookies(Response $response, Queue $queue): Response
     {
         if (empty($queue->getScheduled())) {
             return $response;

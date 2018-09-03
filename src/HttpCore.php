@@ -14,7 +14,6 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestFactoryInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
-use Spiral\Http\Configs\HttpConfig;
 use Zend\Diactoros\Request;
 use Zend\Diactoros\Response;
 use Zend\HttpHandlerRunner\Emitter\EmitterInterface;

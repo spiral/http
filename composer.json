@@ -1,7 +1,7 @@
 {
   "name": "spiral/http",
   "type": "library",
-  "description": "HTTP Dispatcher, Middleware Pipelines",
+  "description": "HTTP Dispatcher, Secure Cookies, CSRF protection, Middleware Pipelines",
   "license": "MIT",
   "authors": [
     {

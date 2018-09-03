@@ -43,7 +43,12 @@ class HttpConfig extends InjectableConfig
         'cookies'    => [
             'domain'   => '.%s',
             'method'   => self::COOKIE_ENCRYPT,
-            'excluded' => ['PHPSESSID']
+            'excluded' => ['PHPSESSID', 'csrf-token']
+        ],
+        'csrf'       => [
+            'cookie'   => 'csrf-token',
+            'length'   => 16,
+            'lifetime' => 86400
         ]
     ];
 
@@ -122,5 +127,37 @@ class HttpConfig extends InjectableConfig
     public function cookiesExcluded(): array
     {
         return $this->config['cookies']['excluded'];
+    }
+
+    /**
+     * @return string
+     */
+    public function csrfCookie(): string
+    {
+        return $this->config['csrf']['cookie'];
+    }
+
+    /**
+     * @return int
+     */
+    public function csrfLength(): int
+    {
+        return $this->config['csrf']['length'];
+    }
+
+    /**
+     * @return int|null
+     */
+    public function csrfLifetime(): ?int
+    {
+        return $this->config['csrf']['lifetime'];
+    }
+
+    /**
+     * @return bool
+     */
+    public function csrfSecure(): bool
+    {
+        return !empty($this->config['csrf']['secure']);
     }
 }
