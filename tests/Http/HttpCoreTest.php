@@ -223,6 +223,20 @@ class HttpCoreTest extends TestCase
         $this->assertSame("hello?", (string)$response->getBody());
     }
 
+    public function testScope()
+    {
+        $core = $this->getCore();
+
+        $core->setHandler(function () {
+            $this->assertTrue($this->container->has(ServerRequestInterface::class));
+            return 'OK';
+        });
+
+        $response = $core->handle(new ServerRequest());
+        $this->assertSame("OK", (string)$response->getBody());
+    }
+
+
     /**
      * @expectedException \RuntimeException
      */
