@@ -41,7 +41,7 @@ class HttpConfig extends InjectableConfig
     protected $config = [
         'basePath'   => '/',
         'headers'    => [
-            'Content-Type' => 'text/html;charset=UTF8'
+            'Content-Type' => 'text/html; charset=UTF-8'
         ],
         'middleware' => [CookieMiddleware::class, CsrfMiddleware::class],
         'cookies'    => [

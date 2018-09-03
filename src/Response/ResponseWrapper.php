@@ -25,14 +25,10 @@ class ResponseWrapper
 {
     use JsonTrait;
 
-    /**
-     * @var ResponseFactoryInterface
-     */
+    /** @var ResponseFactoryInterface */
     protected $responseFactory = null;
 
-    /**
-     * @var FilesInterface
-     */
+    /** @var FilesInterface */
     protected $files = null;
 
     /**
@@ -83,7 +79,7 @@ class ResponseWrapper
      * @param string                                     $name     Public file name (in attachment), by default local
      *                                                             filename. Name is mandratory when filename supplied
      *                                                             in a form of stream or resource.
-     * @param string                                     $mimetype
+     * @param string                                     $mime
      *
      * @return ResponseInterface
      *
@@ -92,9 +88,8 @@ class ResponseWrapper
     public function attachment(
         $filename,
         string $name = '',
-        string $mimetype = 'application/octet-stream'
+        string $mime = 'application/octet-stream'
     ): ResponseInterface {
-
         if (empty($name)) {
             if (!is_string($filename)) {
                 throw new ResponseException("Unable to resolve public filename");
@@ -105,14 +100,8 @@ class ResponseWrapper
 
         $stream = $this->getStream($filename);
 
-        /**
-         * PSR7 love to return 'self' from methods, IDE thinks now that response is MessageInterface
-         *
-         * @var ResponseInterface $response
-         */
-        $response = $this->responseFactory;
-
-        $response = $response->withHeader('Content-Type', $mimetype);
+        $response = $this->responseFactory->createResponse();
+        $response = $response->withHeader('Content-Type', $mime);
         $response = $response->withHeader('Content-Length', (string)$stream->getSize());
         $response = $response->withHeader(
             'Content-Disposition',

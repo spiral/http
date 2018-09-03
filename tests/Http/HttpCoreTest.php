@@ -87,7 +87,7 @@ class HttpCoreTest extends TestCase
         });
 
         $response = $core->handle(new ServerRequest());
-        $this->assertSame(["text/html;charset=UTF8"], $response->getHeader("Content-Type"));
+        $this->assertSame(["text/html; charset=UTF-8"], $response->getHeader("Content-Type"));
         $this->assertSame(["value"], $response->getHeader("hello"));
     }
 
@@ -101,7 +101,7 @@ class HttpCoreTest extends TestCase
         });
 
         $response = $core->handle(new ServerRequest());
-        $this->assertSame(["text/html;charset=UTF8"], $response->getHeader("Content-Type"));
+        $this->assertSame(["text/html; charset=UTF-8"], $response->getHeader("Content-Type"));
         $this->assertSame(["value"], $response->getHeader("hello"));
         $this->assertSame("hello!", (string)$response->getBody());
     }
@@ -117,7 +117,7 @@ class HttpCoreTest extends TestCase
         });
 
         $response = $core->handle(new ServerRequest());
-        $this->assertSame(["text/html;charset=UTF8"], $response->getHeader("Content-Type"));
+        $this->assertSame(["text/html; charset=UTF-8"], $response->getHeader("Content-Type"));
         $this->assertSame(["value"], $response->getHeader("hello"));
         $this->assertSame("world hello!", (string)$response->getBody());
     }
@@ -138,7 +138,7 @@ class HttpCoreTest extends TestCase
 
         $this->assertSame(1, ob_get_level());
         $response = $core->handle(new ServerRequest());
-        $this->assertSame(["text/html;charset=UTF8"], $response->getHeader("Content-Type"));
+        $this->assertSame(["text/html; charset=UTF-8"], $response->getHeader("Content-Type"));
         $this->assertSame("world hello!", (string)$response->getBody());
         $this->assertSame(1, ob_get_level());
     }
@@ -184,7 +184,7 @@ class HttpCoreTest extends TestCase
         });
 
         $response = $core->handle(new ServerRequest());
-        $this->assertSame(["text/html;charset=UTF8"], $response->getHeader("Content-Type"));
+        $this->assertSame(["text/html; charset=UTF-8"], $response->getHeader("Content-Type"));
         $this->assertSame(["Value*"], $response->getHeader("header"));
         $this->assertSame("hello?", (string)$response->getBody());
     }
@@ -201,7 +201,7 @@ class HttpCoreTest extends TestCase
         });
 
         $response = $core->handle(new ServerRequest());
-        $this->assertSame(["text/html;charset=UTF8"], $response->getHeader("Content-Type"));
+        $this->assertSame(["text/html; charset=UTF-8"], $response->getHeader("Content-Type"));
         $this->assertSame(["Value+", "Value*"], $response->getHeader("header"));
         $this->assertSame("hello?", (string)$response->getBody());
     }
@@ -218,7 +218,7 @@ class HttpCoreTest extends TestCase
         });
 
         $response = $core->handle(new ServerRequest());
-        $this->assertSame(["text/html;charset=UTF8"], $response->getHeader("Content-Type"));
+        $this->assertSame(["text/html; charset=UTF-8"], $response->getHeader("Content-Type"));
         $this->assertSame(["Value*", "Value+"], $response->getHeader("header"));
         $this->assertSame("hello?", (string)$response->getBody());
     }
@@ -249,7 +249,7 @@ class HttpCoreTest extends TestCase
         });
 
         $response = $core->handle(new ServerRequest());
-        $this->assertSame(["text/html;charset=UTF8"], $response->getHeader("Content-Type"));
+        $this->assertSame(["text/html;charset=UTF-8"], $response->getHeader("Content-Type"));
         $this->assertSame(["value"], $response->getHeader("hello"));
     }
 
@@ -259,7 +259,7 @@ class HttpCoreTest extends TestCase
             new HttpConfig([
                 'basePath'   => '/',
                 'headers'    => [
-                    'Content-Type' => 'text/html;charset=UTF8'
+                    'Content-Type' => 'text/html; charset=UTF-8'
                 ],
                 'middleware' => $middleware,
                 'cookies'    => [
