@@ -32,11 +32,11 @@ class HttpCore implements ResponseFactoryInterface, RequestHandlerInterface
     protected $handler;
 
     /**
-     * @param HttpConfig              $config
-     * @param Pipeline                $pipeline
-     * @param ContainerInterface|null $container
+     * @param HttpConfig         $config
+     * @param Pipeline           $pipeline
+     * @param ContainerInterface $container
      */
-    public function __construct(HttpConfig $config, Pipeline $pipeline, ContainerInterface $container = null)
+    public function __construct(HttpConfig $config, Pipeline $pipeline, ContainerInterface $container)
     {
         $this->config = $config;
         $this->pipeline = $pipeline;
@@ -45,6 +45,14 @@ class HttpCore implements ResponseFactoryInterface, RequestHandlerInterface
         foreach ($this->config->baseMiddleware() as $middleware) {
             $this->pipeline->pushMiddleware($this->container->get($middleware));
         }
+    }
+
+    /**
+     * @return Pipeline
+     */
+    public function getPipeline(): Pipeline
+    {
+        return $this->pipeline;
     }
 
     /**
@@ -72,7 +80,7 @@ class HttpCore implements ResponseFactoryInterface, RequestHandlerInterface
      */
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
-        if (empty($this->target)) {
+        if (empty($this->handler)) {
             throw new HttpException("Unable to run HttpCore, no handler is set.");
         }
 
