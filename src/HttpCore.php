@@ -14,6 +14,7 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestFactoryInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
+use Spiral\Http\Configs\HttpConfig;
 use Zend\Diactoros\Request;
 use Zend\Diactoros\Response;
 use Zend\HttpHandlerRunner\Emitter\EmitterInterface;
@@ -70,6 +71,6 @@ class HttpCore implements
      */
     public function createResponse(int $code = 200, string $reasonPhrase = ''): ResponseInterface
     {
-        return new Response('php://memory', $code, []);
+        return (new Response('php://memory', $code, []))->withStatus($code, $reasonPhrase);
     }
 }

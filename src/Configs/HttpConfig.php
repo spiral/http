@@ -37,14 +37,14 @@ class HttpConfig extends InjectableConfig
      * @var array
      */
     protected $config = [
-        'basePath'    => '/',
-        'cookies'     => [
+        'basePath'   => '/',
+        'headers'    => [],
+        'middleware' => [],
+        'cookies'    => [
             'domain'   => '.%s',
             'method'   => self::COOKIE_ENCRYPT,
             'excluded' => ['PHPSESSID']
-        ],
-        'headers'     => [],
-        'middlewares' => []
+        ]
     ];
 
     /**
@@ -72,7 +72,7 @@ class HttpConfig extends InjectableConfig
      */
     public function baseMiddleware(): array
     {
-        return $this->config['middlewares'];
+        return $this->config['middleware'] ?? $this->config['middlewares'];
     }
 
     /**
