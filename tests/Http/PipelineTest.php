@@ -48,6 +48,15 @@ class PipelineTest extends TestCase
         $this->assertSame('OK', $response->getReasonPhrase());
         $this->assertSame('response', (string)$response->getBody());
     }
+
+    /**
+     * @expectedException \Spiral\Http\Exceptions\PipelineException
+     */
+    public function testHandleException()
+    {
+        $pipeline = new Pipeline(new Container());
+        $pipeline->handle(new ServerRequest());
+    }
 }
 
 class ResponseFactory implements ResponseFactoryInterface
