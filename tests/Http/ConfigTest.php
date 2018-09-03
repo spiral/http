@@ -10,7 +10,7 @@ namespace Spiral\Http\Tests;
 
 use PHPUnit\Framework\TestCase;
 use Spiral\Http\Configs\HttpConfig;
-use Spiral\Http\Middleware\CookieMiddleware;
+use Spiral\Http\Middleware\CookiesMiddleware;
 use Spiral\Http\Uri;
 
 class ConfigTest extends TestCase
@@ -38,19 +38,19 @@ class ConfigTest extends TestCase
     public function testBaseMiddleware()
     {
         $c = new HttpConfig([
-            'middleware' => [CookieMiddleware::class]
+            'middleware' => [CookiesMiddleware::class]
         ]);
 
-        $this->assertSame([CookieMiddleware::class], $c->baseMiddleware());
+        $this->assertSame([CookiesMiddleware::class], $c->baseMiddleware());
     }
 
     public function testBaseMiddlewareFallback()
     {
         $c = new HttpConfig([
-            'middlewares' => [CookieMiddleware::class]
+            'middlewares' => [CookiesMiddleware::class]
         ]);
 
-        $this->assertSame([CookieMiddleware::class], $c->baseMiddleware());
+        $this->assertSame([CookiesMiddleware::class], $c->baseMiddleware());
     }
 
     public function testCsrf()

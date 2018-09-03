@@ -8,7 +8,7 @@
 
 namespace Spiral\Http\Cookies;
 
-class Queue
+class CookieQueue
 {
     const ATTRIBUTE = 'cookieQueue';
 
@@ -102,9 +102,9 @@ class Queue
      *
      * @param Cookie $cookie
      *
-     * @return Queue
+     * @return CookieQueue
      */
-    public function schedule(Cookie $cookie): Queue
+    public function schedule(Cookie $cookie): CookieQueue
     {
         $this->scheduled[] = $cookie;
 

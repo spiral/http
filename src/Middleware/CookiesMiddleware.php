@@ -17,14 +17,14 @@ use Spiral\Encrypter\EncrypterInterface;
 use Spiral\Encrypter\Exceptions\DecryptException;
 use Spiral\Http\Configs\HttpConfig;
 use Spiral\Http\Cookies\Cookie;
-use Spiral\Http\Cookies\Queue;
+use Spiral\Http\Cookies\CookieQueue;
 
 /**
  * Middleware used to encrypt and decrypt cookies. Creates container scope for a cookie bucket.
  *
  * Attention, EncrypterInterface is requested from container on demand.
  */
-class CookieMiddleware implements MiddlewareInterface
+class CookiesMiddleware implements MiddlewareInterface
 {
     /** @var HttpConfig */
     private $config = null;
@@ -44,6 +44,7 @@ class CookieMiddleware implements MiddlewareInterface
     {
         $this->config = $config;
         $this->scope = $scope;
+        $this->encrypter = $encrypter;
     }
 
     /**
@@ -52,16 +53,19 @@ class CookieMiddleware implements MiddlewareInterface
     public function process(Request $request, RequestHandlerInterface $handler): Response
     {
         //Aggregates all user cookies
-        $queue = new Queue(
+        $queue = new CookieQueue(
             $this->config->cookieDomain($request->getUri()),
             $request->getUri()->getScheme() == "https"
         );
 
-        $response = $this->scope->runScope([], function () use ($request, $handler, $queue) {
-            return $handler->handle(
-                $this->unpackCookies($request)->withAttribute(Queue::ATTRIBUTE, $queue)
-            );
-        });
+        $response = $this->scope->runScope(
+            [CookieQueue::class => $queue],
+            function () use ($request, $handler, $queue) {
+                return $handler->handle(
+                    $this->unpackCookies($request)->withAttribute(CookieQueue::ATTRIBUTE, $queue)
+                );
+            }
+        );
 
         return $this->packCookies($response, $queue);
     }
@@ -150,14 +154,14 @@ class CookieMiddleware implements MiddlewareInterface
     /**
      * Pack outcoming cookies with encrypted value.
      *
-     * @param Response $response
-     * @param Queue    $queue
+     * @param Response    $response
+     * @param CookieQueue $queue
      *
      * @return Response
      *
      * @throws \Spiral\Encrypter\Exceptions\EncryptException
      */
-    protected function packCookies(Response $response, Queue $queue): Response
+    protected function packCookies(Response $response, CookieQueue $queue): Response
     {
         if (empty($queue->getScheduled())) {
             return $response;

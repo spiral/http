@@ -11,7 +11,7 @@ namespace Spiral\Http\Configs;
 use Psr\Http\Message\UriInterface;
 use Spiral\Core\Container\Autowire;
 use Spiral\Core\InjectableConfig;
-use Spiral\Http\Middleware\CookieMiddleware;
+use Spiral\Http\Middleware\CookiesMiddleware;
 use Spiral\Http\Middleware\CsrfMiddleware;
 
 class HttpConfig extends InjectableConfig
@@ -43,7 +43,7 @@ class HttpConfig extends InjectableConfig
         'headers'    => [
             'Content-Type' => 'text/html; charset=UTF-8'
         ],
-        'middleware' => [CookieMiddleware::class, CsrfMiddleware::class],
+        'middleware' => [CookiesMiddleware::class, CsrfMiddleware::class],
         'cookies'    => [
             'domain'   => '.%s',
             'method'   => self::COOKIE_ENCRYPT,

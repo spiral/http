@@ -16,7 +16,7 @@ use Spiral\Encrypter\Encrypter;
 use Spiral\Encrypter\EncrypterInterface;
 use Spiral\Http\Configs\HttpConfig;
 use Spiral\Http\HttpCore;
-use Spiral\Http\Middleware\CookieMiddleware;
+use Spiral\Http\Middleware\CookiesMiddleware;
 use Spiral\Http\Middleware\CsrfFirewall;
 use Spiral\Http\Middleware\CsrfMiddleware;
 use Spiral\Http\Pipeline;
@@ -55,17 +55,18 @@ class CsrfTest extends TestCase
     public function testGet()
     {
         $core = $this->getCore([CsrfMiddleware::class]);
-        $core->setHandler(function () {
-            return 'all good';
+        $core->setHandler(function ($r) {
+            return $r->getAttribute(CsrfMiddleware::ATTRIBUTE);
         });
 
         $response = $this->get($core, '/');
         $this->assertSame(200, $response->getStatusCode());
-        $this->assertSame('all good', (string)$response->getBody());
 
         $cookies = $this->fetchCookies($response);
 
         $this->assertArrayHasKey('csrf-token', $cookies);
+        $this->assertSame($cookies['csrf-token'], (string)$response->getBody());
+
     }
 
     /**
@@ -175,7 +176,7 @@ class CsrfTest extends TestCase
 
     public function testPostOKCookieManagerEnabled()
     {
-        $core = $this->getCore([CookieMiddleware::class, CsrfMiddleware::class, CsrfFirewall::class]);
+        $core = $this->getCore([CookiesMiddleware::class, CsrfMiddleware::class, CsrfFirewall::class]);
         $core->setHandler(function () {
             return 'all good';
         });
