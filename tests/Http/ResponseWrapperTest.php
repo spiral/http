@@ -11,9 +11,12 @@ namespace Spiral\Http\Tests;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\StreamInterface;
 use Spiral\Files\Files;
+use Spiral\Files\Streams\StreamableInterface;
 use Spiral\Http\Response\ResponseWrapper;
 use Zend\Diactoros\Response;
+use Zend\Diactoros\Stream;
 
 class ResponseWrapperTest extends TestCase
 {
@@ -65,7 +68,7 @@ class ResponseWrapperTest extends TestCase
         $this->assertSame('application/octet-stream', (string)$response->getHeaderLine('Content-Type'));
     }
 
-    public function testAttachmentStream()
+    public function testAttachmentResource()
     {
         $response = $this->getWrapper()->attachment(fopen(__FILE__, 'r'), 'file.php');
 
@@ -73,6 +76,45 @@ class ResponseWrapperTest extends TestCase
         $this->assertSame(file_get_contents(__FILE__), (string)$response->getBody());
         $this->assertSame(filesize(__FILE__), $response->getBody()->getSize());
         $this->assertSame('application/octet-stream', (string)$response->getHeaderLine('Content-Type'));
+    }
+
+    public function testAttachmentStream()
+    {
+        $response = $this->getWrapper()->attachment(new Stream(fopen(__FILE__, 'r'), 'r'), 'file.php');
+
+        $this->assertSame(200, $response->getStatusCode());
+        $this->assertSame(file_get_contents(__FILE__), (string)$response->getBody());
+        $this->assertSame(filesize(__FILE__), $response->getBody()->getSize());
+        $this->assertSame('application/octet-stream', (string)$response->getHeaderLine('Content-Type'));
+    }
+
+    public function testAttachmentStreamable()
+    {
+        $response = $this->getWrapper()->attachment(
+            new Streamable(new Stream(fopen(__FILE__, 'r'), 'r')),
+            'file.php'
+        );
+
+        $this->assertSame(200, $response->getStatusCode());
+        $this->assertSame(file_get_contents(__FILE__), (string)$response->getBody());
+        $this->assertSame(filesize(__FILE__), $response->getBody()->getSize());
+        $this->assertSame('application/octet-stream', (string)$response->getHeaderLine('Content-Type'));
+    }
+
+    /**
+     * @expectedException \Spiral\Http\Exceptions\ResponseException
+     */
+    public function testAttachmentStreamNoName()
+    {
+        $response = $this->getWrapper()->attachment(new Stream(fopen(__FILE__, 'r'), 'r'));
+    }
+
+    /**
+     * @expectedException \Spiral\Http\Exceptions\ResponseException
+     */
+    public function testAttachmentException()
+    {
+        $response = $this->getWrapper()->attachment('invalid');
     }
 
     protected function getWrapper(): ResponseWrapper
@@ -89,5 +131,23 @@ class WrapperResponseFactory implements ResponseFactoryInterface
     public function createResponse(int $code = 200, string $reasonPhrase = ''): ResponseInterface
     {
         return (new Response('php://memory', $code, []))->withStatus($code, $reasonPhrase);
+    }
+}
+
+class Streamable implements StreamableInterface
+{
+    private $stream;
+
+    public function __construct(StreamInterface $stream)
+    {
+        $this->stream = $stream;
+    }
+
+    /**
+     * @return StreamInterface
+     */
+    public function getStream(): StreamInterface
+    {
+        return $this->stream;
     }
 }
