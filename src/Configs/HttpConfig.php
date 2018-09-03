@@ -94,6 +94,9 @@ class HttpConfig extends InjectableConfig
     public function cookieDomain(UriInterface $uri): ?string
     {
         $host = $uri->getHost();
+        if (empty($host)) {
+            return null;
+        }
 
         $pattern = $this->config['cookies']['domain'];
         if (filter_var($host, FILTER_VALIDATE_IP)) {
@@ -118,7 +121,7 @@ class HttpConfig extends InjectableConfig
      *
      * @return int
      */
-    public function cookieProtection(): int
+    public function cookieProtectionMethod(): int
     {
         return $this->config['cookies']['method'];
     }
@@ -154,7 +157,7 @@ class HttpConfig extends InjectableConfig
      */
     public function csrfLifetime(): ?int
     {
-        return $this->config['csrf']['lifetime'];
+        return $this->config['csrf']['lifetime'] ?? null;
     }
 
     /**

@@ -102,7 +102,7 @@ class CookieMiddleware implements MiddlewareInterface
             return false;
         }
 
-        return $this->config->cookieProtection() != HttpConfig::COOKIE_UNPROTECTED;
+        return $this->config->cookieProtectionMethod() != HttpConfig::COOKIE_UNPROTECTED;
     }
 
     /**
@@ -112,7 +112,7 @@ class CookieMiddleware implements MiddlewareInterface
      */
     private function decodeCookie($cookie)
     {
-        if ($this->config->cookieProtection() == HttpConfig::COOKIE_ENCRYPT) {
+        if ($this->config->cookieProtectionMethod() == HttpConfig::COOKIE_ENCRYPT) {
             try {
                 if (is_array($cookie)) {
                     return array_map([$this, 'decodeCookie'], $cookie);
@@ -184,7 +184,7 @@ class CookieMiddleware implements MiddlewareInterface
      */
     private function encodeCookie(Cookie $cookie): Cookie
     {
-        if ($this->config->cookieProtection() == HttpConfig::COOKIE_ENCRYPT) {
+        if ($this->config->cookieProtectionMethod() == HttpConfig::COOKIE_ENCRYPT) {
             return $cookie->withValue(
                 $this->encrypter->encrypt($cookie->getValue())
             );
