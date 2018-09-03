@@ -132,9 +132,11 @@ class HttpCoreTest extends TestCase
             return "world ";
         });
 
+        $this->assertSame(1, ob_get_level());
         $response = $core->handle(new ServerRequest());
         $this->assertSame(["text/html;charset=UTF8"], $response->getHeader("Content-Type"));
         $this->assertSame("world hello!", (string)$response->getBody());
+        $this->assertSame(1, ob_get_level());
     }
 
     public function testJson()
