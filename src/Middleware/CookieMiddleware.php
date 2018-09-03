@@ -89,36 +89,6 @@ class CookieMiddleware implements MiddlewareInterface
     }
 
     /**
-     * Pack outcoming cookies with encrypted value.
-     *
-     * @param Response $response
-     * @param Queue    $queue
-     *
-     * @return Response
-     *
-     * @throws \Spiral\Encrypter\Exceptions\EncryptException
-     */
-    protected function packCookies(Response $response, Queue $queue): Response
-    {
-        if (empty($queue->getScheduled())) {
-            return $response;
-        }
-
-        $cookies = $response->getHeader('Set-Cookie');
-
-        foreach ($queue->getScheduled() as $cookie) {
-            if (!$this->isProtected($cookie->getName()) || empty($cookie->getValue())) {
-                $cookies[] = $cookie->createHeader();
-                continue;
-            }
-
-            $cookies[] = $this->encodeCookie($cookie)->createHeader();
-        }
-
-        return $response->withHeader('Set-Cookie', $cookies);
-    }
-
-    /**
      * Check if cookie has to be protected.
      *
      * @param string $cookie
@@ -166,6 +136,48 @@ class CookieMiddleware implements MiddlewareInterface
     }
 
     /**
+     * Sign string.
+     *
+     * @param string|null $value
+     *
+     * @return string
+     */
+    private function hmacSign($value): string
+    {
+        return hash_hmac(HttpConfig::HMAC_ALGORITHM, $value, $this->encrypter->getKey());
+    }
+
+    /**
+     * Pack outcoming cookies with encrypted value.
+     *
+     * @param Response $response
+     * @param Queue    $queue
+     *
+     * @return Response
+     *
+     * @throws \Spiral\Encrypter\Exceptions\EncryptException
+     */
+    protected function packCookies(Response $response, Queue $queue): Response
+    {
+        if (empty($queue->getScheduled())) {
+            return $response;
+        }
+
+        $cookies = $response->getHeader('Set-Cookie');
+
+        foreach ($queue->getScheduled() as $cookie) {
+            if (!$this->isProtected($cookie->getName()) || empty($cookie->getValue())) {
+                $cookies[] = $cookie->createHeader();
+                continue;
+            }
+
+            $cookies[] = $this->encodeCookie($cookie)->createHeader();
+        }
+
+        return $response->withHeader('Set-Cookie', $cookies);
+    }
+
+    /**
      * @param Cookie $cookie
      *
      * @return Cookie
@@ -180,17 +192,5 @@ class CookieMiddleware implements MiddlewareInterface
 
         //VALUE.HMAC
         return $cookie->withValue($cookie->getValue() . $this->hmacSign($cookie->getValue()));
-    }
-
-    /**
-     * Sign string.
-     *
-     * @param string|null $value
-     *
-     * @return string
-     */
-    private function hmacSign($value): string
-    {
-        return hash_hmac(HttpConfig::HMAC_ALGORITHM, $value, $this->encrypter->getKey());
     }
 }

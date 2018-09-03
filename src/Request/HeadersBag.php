@@ -23,6 +23,22 @@ class HeadersBag extends InputBag
     }
 
     /**
+     * Normalize header name.
+     *
+     * @param string $header
+     *
+     * @return string
+     */
+    protected function normalize(string $header): string
+    {
+        return str_replace(
+            ' ',
+            '-',
+            ucwords(str_replace('-', ' ', $header))
+        );
+    }
+
+    /**
      * {@inheritdoc}
      *
      *
@@ -60,21 +76,5 @@ class HeadersBag extends InputBag
         }
 
         return $values;
-    }
-
-    /**
-     * Normalize header name.
-     *
-     * @param string $header
-     *
-     * @return string
-     */
-    protected function normalize(string $header): string
-    {
-        return str_replace(
-            ' ',
-            '-',
-            ucwords(str_replace('-', ' ', $header))
-        );
     }
 }

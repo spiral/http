@@ -14,7 +14,7 @@ use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Spiral\Core\ScopeInterface;
 use Spiral\Http\Exceptions\PipelineException;
-use Spiral\Http\Traits\MiddlewaresTrait;
+use Spiral\Http\Traits\MiddlewareTrait;
 
 /**
  * Pipeline used to pass request and response thought the chain of middlewares.
@@ -24,7 +24,7 @@ use Spiral\Http\Traits\MiddlewaresTrait;
  */
 class Pipeline implements RequestHandlerInterface, MiddlewareInterface
 {
-    use MiddlewaresTrait;
+    use MiddlewareTrait;
 
     /** @var ScopeInterface */
     private $scope;
@@ -41,24 +41,6 @@ class Pipeline implements RequestHandlerInterface, MiddlewareInterface
     public function __construct(ScopeInterface $scope)
     {
         $this->scope = $scope;
-    }
-
-    /**
-     * Configures pipeline with target endpoint.
-     *
-     * @param RequestHandlerInterface $target
-     *
-     * @return Pipeline
-     *
-     * @throws PipelineException
-     */
-    public function withHandler(RequestHandlerInterface $target): self
-    {
-        $pipeline = clone $this;
-        $pipeline->target = $target;
-        $pipeline->position = 0;
-
-        return $pipeline;
     }
 
     /**
@@ -79,12 +61,30 @@ class Pipeline implements RequestHandlerInterface, MiddlewareInterface
         }
 
         $position = $this->position++;
-        if (isset($this->middlewares[$position])) {
-            return $this->middlewares[$position]->process($request, $this);
+        if (isset($this->middleware[$position])) {
+            return $this->middleware[$position]->process($request, $this);
         }
 
         return $this->scope->runScope([Request::class => $request], function () use ($request) {
             return $this->target->handle($request);
         });
+    }
+
+    /**
+     * Configures pipeline with target endpoint.
+     *
+     * @param RequestHandlerInterface $target
+     *
+     * @return Pipeline
+     *
+     * @throws PipelineException
+     */
+    public function withHandler(RequestHandlerInterface $target): self
+    {
+        $pipeline = clone $this;
+        $pipeline->target = $target;
+        $pipeline->position = 0;
+
+        return $pipeline;
     }
 }

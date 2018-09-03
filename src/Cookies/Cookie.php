@@ -136,6 +136,59 @@ final class Cookie
     }
 
     /**
+     * New Cookie instance, cookies used to schedule cookie set while dispatching Response.
+     * Static constructor.
+     *
+     * @link http://php.net/manual/en/function.setcookie.php
+     *
+     * @param string $name     The name of the cookie.
+     * @param string $value    The value of the cookie. This value is stored on the clients
+     *                         computer; do not store sensitive information.
+     * @param int    $lifetime Cookie lifetime. This value specified in seconds and declares period
+     *                         of time in which cookie will expire relatively to current time()
+     *                         value.
+     * @param string $path     The path on the server in which the cookie will be available on.
+     *                         If set to '/', the cookie will be available within the entire
+     *                         domain.
+     *                         If set to '/foo/', the cookie will only be available within the
+     *                         /foo/
+     *                         directory and all sub-directories such as /foo/bar/ of domain. The
+     *                         default value is the current directory that the cookie is being set
+     *                         in.
+     * @param string $domain   The domain that the cookie is available. To make the cookie
+     *                         available
+     *                         on all subdomains of example.com then you'd set it to
+     *                         '.example.com'.
+     *                         The . is not required but makes it compatible with more browsers.
+     *                         Setting it to www.example.com will make the cookie only available in
+     *                         the www subdomain. Refer to tail matching in the spec for details.
+     * @param bool   $secure   Indicates that the cookie should only be transmitted over a secure
+     *                         HTTPS connection from the client. When set to true, the cookie will
+     *                         only be set if a secure connection exists. On the server-side, it's
+     *                         on the programmer to send this kind of cookie only on secure
+     *                         connection (e.g. with respect to $_SERVER["HTTPS"]).
+     * @param bool   $httpOnly When true the cookie will be made accessible only through the HTTP
+     *                         protocol. This means that the cookie won't be accessible by
+     *                         scripting
+     *                         languages, such as JavaScript. This setting can effectively help to
+     *                         reduce identity theft through XSS attacks (although it is not
+     *                         supported by all browsers).
+     *
+     * @return Cookie
+     */
+    public static function create(
+        string $name,
+        string $value = null,
+        int $lifetime = null,
+        string $path = null,
+        string $domain = null,
+        bool $secure = false,
+        bool $httpOnly = true
+    ): self {
+        return new self($name, $value, $lifetime, $path, $domain, $secure, $httpOnly);
+    }
+
+    /**
      * The name of the cookie.
      *
      * @return string
@@ -154,24 +207,6 @@ final class Cookie
     public function getValue(): ?string
     {
         return $this->value;
-    }
-
-    /**
-     * The time the cookie expires. This is a Unix timestamp so is in number of seconds since the
-     * epoch. In other words, you'll most likely set this with the time function plus the number of
-     * seconds before you want it to expire. Or you might use mktime.
-     *
-     * Will return null if lifetime is not specified.
-     *
-     * @return int|null
-     */
-    public function getExpires(): ?int
-    {
-        if ($this->lifetime === null) {
-            return null;
-        }
-
-        return time() + $this->lifetime;
     }
 
     /**
@@ -245,6 +280,14 @@ final class Cookie
     }
 
     /**
+     * @return string
+     */
+    public function __toString(): string
+    {
+        return $this->createHeader();
+    }
+
+    /**
      * Convert cookie instance to string.
      *
      * @link http://www.w3.org/Protocols/rfc2109/rfc2109
@@ -281,63 +324,20 @@ final class Cookie
     }
 
     /**
-     * New Cookie instance, cookies used to schedule cookie set while dispatching Response.
-     * Static constructor.
+     * The time the cookie expires. This is a Unix timestamp so is in number of seconds since the
+     * epoch. In other words, you'll most likely set this with the time function plus the number of
+     * seconds before you want it to expire. Or you might use mktime.
      *
-     * @link http://php.net/manual/en/function.setcookie.php
+     * Will return null if lifetime is not specified.
      *
-     * @param string $name     The name of the cookie.
-     * @param string $value    The value of the cookie. This value is stored on the clients
-     *                         computer; do not store sensitive information.
-     * @param int    $lifetime Cookie lifetime. This value specified in seconds and declares period
-     *                         of time in which cookie will expire relatively to current time()
-     *                         value.
-     * @param string $path     The path on the server in which the cookie will be available on.
-     *                         If set to '/', the cookie will be available within the entire
-     *                         domain.
-     *                         If set to '/foo/', the cookie will only be available within the
-     *                         /foo/
-     *                         directory and all sub-directories such as /foo/bar/ of domain. The
-     *                         default value is the current directory that the cookie is being set
-     *                         in.
-     * @param string $domain   The domain that the cookie is available. To make the cookie
-     *                         available
-     *                         on all subdomains of example.com then you'd set it to
-     *                         '.example.com'.
-     *                         The . is not required but makes it compatible with more browsers.
-     *                         Setting it to www.example.com will make the cookie only available in
-     *                         the www subdomain. Refer to tail matching in the spec for details.
-     * @param bool   $secure   Indicates that the cookie should only be transmitted over a secure
-     *                         HTTPS connection from the client. When set to true, the cookie will
-     *                         only be set if a secure connection exists. On the server-side, it's
-     *                         on the programmer to send this kind of cookie only on secure
-     *                         connection (e.g. with respect to $_SERVER["HTTPS"]).
-     * @param bool   $httpOnly When true the cookie will be made accessible only through the HTTP
-     *                         protocol. This means that the cookie won't be accessible by
-     *                         scripting
-     *                         languages, such as JavaScript. This setting can effectively help to
-     *                         reduce identity theft through XSS attacks (although it is not
-     *                         supported by all browsers).
-     *
-     * @return Cookie
+     * @return int|null
      */
-    public static function create(
-        string $name,
-        string $value = null,
-        int $lifetime = null,
-        string $path = null,
-        string $domain = null,
-        bool $secure = false,
-        bool $httpOnly = true
-    ): self {
-        return new self($name, $value, $lifetime, $path, $domain, $secure, $httpOnly);
-    }
-
-    /**
-     * @return string
-     */
-    public function __toString(): string
+    public function getExpires(): ?int
     {
-        return $this->createHeader();
+        if ($this->lifetime === null) {
+            return null;
+        }
+
+        return time() + $this->lifetime;
     }
 }

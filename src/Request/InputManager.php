@@ -36,17 +36,6 @@ use Spiral\Http\Exceptions\InputException;
  */
 class InputManager implements SingletonInterface
 {
-    /** @var InputBag[] */
-    private $bags = [];
-
-    /**
-     * Prefix to add for each input request.
-     *
-     * @see self::withPrefix();
-     * @var string
-     */
-    private $prefix = '';
-
     /**
      * Associations between bags and representing class/request method.
      *
@@ -83,18 +72,25 @@ class InputManager implements SingletonInterface
             'source' => 'getAttributes'
         ]
     ];
-
     /**
      * @invisible
      * @var Request
      */
     protected $request = null;
-
     /**
      * @invisible
      * @var ContainerInterface
      */
     protected $container = null;
+    /** @var InputBag[] */
+    private $bags = [];
+    /**
+     * Prefix to add for each input request.
+     *
+     * @see self::withPrefix();
+     * @var string
+     */
+    private $prefix = '';
 
     /**
      * @param ContainerInterface $container
@@ -127,6 +123,34 @@ class InputManager implements SingletonInterface
     }
 
     /**
+     * Get page path (including leading slash) associated with active request.
+     *
+     * @return string
+     */
+    public function path(): string
+    {
+        $path = $this->uri()->getPath();
+
+        if (empty($path)) {
+            return '/';
+        } elseif ($path[0] !== '/') {
+            return '/' . $path;
+        }
+
+        return $path;
+    }
+
+    /**
+     * Get UriInterface associated with active request.
+     *
+     * @return UriInterface
+     */
+    public function uri(): UriInterface
+    {
+        return $this->request()->getUri();
+    }
+
+    /**
      * Get active instance of ServerRequestInterface and reset all bags if instance changed.
      *
      * @return Request
@@ -152,34 +176,6 @@ class InputManager implements SingletonInterface
         }
 
         return $this->request;
-    }
-
-    /**
-     * Get UriInterface associated with active request.
-     *
-     * @return UriInterface
-     */
-    public function uri(): UriInterface
-    {
-        return $this->request()->getUri();
-    }
-
-    /**
-     * Get page path (including leading slash) associated with active request.
-     *
-     * @return string
-     */
-    public function path(): string
-    {
-        $path = $this->uri()->getPath();
-
-        if (empty($path)) {
-            return '/';
-        } elseif ($path[0] !== '/') {
-            return '/' . $path;
-        }
-
-        return $path;
     }
 
     /**
@@ -239,6 +235,16 @@ class InputManager implements SingletonInterface
     }
 
     /**
+     * @param string $name
+     *
+     * @return InputBag
+     */
+    public function __get(string $name): InputBag
+    {
+        return $this->bag($name);
+    }
+
+    /**
      * Get bag instance or create new one on demand.
      *
      * @param string $name
@@ -269,16 +275,6 @@ class InputManager implements SingletonInterface
     }
 
     /**
-     * @param string $name
-     *
-     * @return InputBag
-     */
-    public function __get(string $name): InputBag
-    {
-        return $this->bag($name);
-    }
-
-    /**
      * @param string      $name
      * @param mixed       $default
      * @param bool|string $implode Implode header lines, false to return header as array.
@@ -288,17 +284,6 @@ class InputManager implements SingletonInterface
     public function header(string $name, $default = null, $implode = ',')
     {
         return $this->headers->get($name, $default, $implode);
-    }
-
-    /**
-     * @param string $name
-     * @param mixed  $default
-     *
-     * @return mixed
-     */
-    public function data(string $name, $default = null)
-    {
-        return $this->data->get($name, $default);
     }
 
     /**
@@ -320,9 +305,9 @@ class InputManager implements SingletonInterface
      *
      * @return mixed
      */
-    public function query(string $name, $default = null)
+    public function data(string $name, $default = null)
     {
-        return $this->query->get($name, $default);
+        return $this->data->get($name, $default);
     }
 
     /**
@@ -336,6 +321,17 @@ class InputManager implements SingletonInterface
     public function input(string $name, $default = null)
     {
         return $this->data($name, $this->query($name, $default));
+    }
+
+    /**
+     * @param string $name
+     * @param mixed  $default
+     *
+     * @return mixed
+     */
+    public function query(string $name, $default = null)
+    {
+        return $this->query->get($name, $default);
     }
 
     /**

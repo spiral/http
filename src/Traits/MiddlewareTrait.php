@@ -11,16 +11,16 @@ namespace Spiral\Http\Traits;
 use Psr\Http\Server\MiddlewareInterface;
 
 /**
- * Provides ability to manage set of middlewares.
+ * Provides ability to manage set of middleware.
  */
-trait MiddlewaresTrait
+trait MiddlewareTrait
 {
     /**
-     * Set of middlewares to be applied for every request.
+     * Set of middleware to be applied for every request.
      *
      * @var MiddlewareInterface[]
      */
-    protected $middlewares = [];
+    protected $middleware = [];
 
     /**
      * Add new middleware at the end of chain.
@@ -34,7 +34,7 @@ trait MiddlewaresTrait
      */
     public function pushMiddleware(MiddlewareInterface $middleware)
     {
-        $this->middlewares[] = $middleware;
+        $this->middleware[] = $middleware;
 
         return $this;
     }
@@ -51,7 +51,7 @@ trait MiddlewaresTrait
      */
     public function riseMiddleware($middleware)
     {
-        array_unshift($this->middlewares, $middleware);
+        array_unshift($this->middleware, $middleware);
 
         return $this;
     }

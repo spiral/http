@@ -42,14 +42,6 @@ class InputBag implements \Countable, \IteratorAggregate, \ArrayAccess
     }
 
     /**
-     * {@inheritdoc}
-     */
-    public function getIterator(): \Traversable
-    {
-        return new \ArrayIterator($this->all());
-    }
-
-    /**
      * @return array
      */
     public function all(): array
@@ -59,105 +51,6 @@ class InputBag implements \Countable, \IteratorAggregate, \ArrayAccess
         } catch (DotNotFoundException $e) {
             return [];
         }
-    }
-
-    /**
-     * Check if field presented (can be empty) by it's name. Dot notation allowed.
-     *
-     * @param string $name
-     *
-     * @return bool
-     */
-    public function has(string $name): bool
-    {
-        try {
-            $this->dotGet($name);
-        } catch (DotNotFoundException $e) {
-            return false;
-        }
-
-        return true;
-    }
-
-    /**
-     * Get property or return default value. Dot notation allowed.
-     *
-     * @param string $name
-     * @param mixed  $default
-     *
-     * @return mixed
-     */
-    public function get(string $name, $default = null)
-    {
-        try {
-            return $this->dotGet($name);
-        } catch (DotNotFoundException $e) {
-            return $default;
-        }
-    }
-
-    /**
-     * Fetch only specified keys from property values. Missed values can be filled with defined
-     * filler. Only one variable layer can be fetched (no dot notation).
-     *
-     * @param array $keys
-     * @param bool  $fill Fill missing key with filler value.
-     * @param mixed $filler
-     *
-     * @return array
-     */
-    public function fetch(array $keys, bool $fill = false, $filler = null)
-    {
-        $result = array_intersect_key($this->all(), array_flip($keys));;
-        if (!$fill) {
-            return $result;
-        }
-
-        return $result + array_fill_keys($keys, $filler);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function offsetExists($offset)
-    {
-        return $this->has($offset);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function offsetGet($offset)
-    {
-        return $this->get($offset);
-    }
-
-    /**
-     * {@inheritdoc}
-     *
-     * @throws InputException
-     */
-    public function offsetSet($offset, $value)
-    {
-        throw new InputException("InputBag is immutable");
-    }
-
-    /**
-     * {@inheritdoc}
-     *
-     * @throws InputException
-     */
-    public function offsetUnset($offset)
-    {
-        throw new InputException("InputBag is immutable");
-    }
-
-    /**
-     * @return array
-     */
-    public function __debugInfo()
-    {
-        return $this->all();
     }
 
     /**
@@ -190,5 +83,112 @@ class InputBag implements \Countable, \IteratorAggregate, \ArrayAccess
         }
 
         return $data;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getIterator(): \Traversable
+    {
+        return new \ArrayIterator($this->all());
+    }
+
+    /**
+     * Fetch only specified keys from property values. Missed values can be filled with defined
+     * filler. Only one variable layer can be fetched (no dot notation).
+     *
+     * @param array $keys
+     * @param bool  $fill Fill missing key with filler value.
+     * @param mixed $filler
+     *
+     * @return array
+     */
+    public function fetch(array $keys, bool $fill = false, $filler = null)
+    {
+        $result = array_intersect_key($this->all(), array_flip($keys));;
+        if (!$fill) {
+            return $result;
+        }
+
+        return $result + array_fill_keys($keys, $filler);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function offsetExists($offset)
+    {
+        return $this->has($offset);
+    }
+
+    /**
+     * Check if field presented (can be empty) by it's name. Dot notation allowed.
+     *
+     * @param string $name
+     *
+     * @return bool
+     */
+    public function has(string $name): bool
+    {
+        try {
+            $this->dotGet($name);
+        } catch (DotNotFoundException $e) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function offsetGet($offset)
+    {
+        return $this->get($offset);
+    }
+
+    /**
+     * Get property or return default value. Dot notation allowed.
+     *
+     * @param string $name
+     * @param mixed  $default
+     *
+     * @return mixed
+     */
+    public function get(string $name, $default = null)
+    {
+        try {
+            return $this->dotGet($name);
+        } catch (DotNotFoundException $e) {
+            return $default;
+        }
+    }
+
+    /**
+     * {@inheritdoc}
+     *
+     * @throws InputException
+     */
+    public function offsetSet($offset, $value)
+    {
+        throw new InputException("InputBag is immutable");
+    }
+
+    /**
+     * {@inheritdoc}
+     *
+     * @throws InputException
+     */
+    public function offsetUnset($offset)
+    {
+        throw new InputException("InputBag is immutable");
+    }
+
+    /**
+     * @return array
+     */
+    public function __debugInfo()
+    {
+        return $this->all();
     }
 }
