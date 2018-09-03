@@ -18,7 +18,7 @@ use Spiral\Http\Response\ResponseWrapper;
 use Zend\Diactoros\Response;
 use Zend\Diactoros\Stream;
 
-class ResponseWrapperTest extends TestCase
+class ResponsesTest extends TestCase
 {
     public function testRedirect()
     {
