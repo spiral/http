@@ -60,7 +60,6 @@ class InputManagerTest extends TestCase
         $this->assertSame('/other', $this->input->path());
     }
 
-
     public function testUri()
     {
         $request = new ServerRequest([], [], 'http://domain.com/hello-world');
@@ -77,6 +76,12 @@ class InputManagerTest extends TestCase
         $this->container->bind(ServerRequestInterface::class, $request);
 
         $this->assertSame('/', $this->input->path());
+
+
+        $request = new ServerRequest([], [], 'hello');
+        $this->container->bind(ServerRequestInterface::class, $request);
+
+        $this->assertSame('/hello', $this->input->path());
     }
 
     public function testMethod()
@@ -229,6 +234,17 @@ class InputManagerTest extends TestCase
         $this->assertInstanceOf(InputBag::class, $this->input->query);
         $this->assertInstanceOf(FilesBag::class, $this->input->files);
         $this->assertInstanceOf(HeadersBag::class, $this->input->headers);
+
+        $this->assertInstanceOf(ServerBag::class, $this->input->server);
+        $this->assertInstanceOf(InputBag::class, $this->input->attributes);
+        $this->assertInstanceOf(InputBag::class, $this->input->data);
+        $this->assertInstanceOf(InputBag::class, $this->input->cookies);
+        $this->assertInstanceOf(InputBag::class, $this->input->query);
+        $this->assertInstanceOf(FilesBag::class, $this->input->files);
+        $this->assertInstanceOf(HeadersBag::class, $this->input->headers);
+
+        $input = clone $this->input;
+        $this->assertInstanceOf(ServerBag::class, $input->server);
     }
 
     /**
