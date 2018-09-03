@@ -163,7 +163,6 @@ class CookiesTest extends TestCase
         $this->assertSame('', (string)$response->getBody());
     }
 
-
     public function testDelete()
     {
         $core = $this->getCore([CookiesMiddleware::class]);
@@ -181,6 +180,96 @@ class CookiesTest extends TestCase
         $cookies = $this->fetchCookies($response);
         $this->assertArrayHasKey('name', $cookies);
         $this->assertSame('', $cookies['name']);
+    }
+
+    public function testUnprotected()
+    {
+        $this->container->bind(HttpConfig::class, new HttpConfig([
+            'basePath' => '/',
+            'headers'  => [],
+            'cookies'  => [
+                'domain'   => '.%s',
+                'method'   => HttpConfig::COOKIE_UNPROTECTED,
+                'excluded' => ['PHPSESSID', 'csrf-token']
+            ]
+        ]));
+
+        $core = $this->getCore([CookiesMiddleware::class]);
+        $core->setHandler(function ($r) {
+            $this->container->get(CookieQueue::class)->set('name', 'value');
+            return 'all good';
+        });
+
+        $response = $this->get($core, '/');
+        $this->assertSame(200, $response->getStatusCode());
+        $this->assertSame('all good', (string)$response->getBody());
+
+        $cookies = $this->fetchCookies($response);
+        $this->assertArrayHasKey('name', $cookies);
+        $this->assertSame('value', $cookies['name']);
+    }
+
+    public function testGetUnprotected()
+    {
+        $this->container->bind(HttpConfig::class, new HttpConfig([
+            'basePath' => '/',
+            'headers'  => [],
+            'cookies'  => [
+                'domain'   => '.%s',
+                'method'   => HttpConfig::COOKIE_UNPROTECTED,
+                'excluded' => ['PHPSESSID', 'csrf-token']
+            ]
+        ]));
+
+        $core = $this->getCore([CookiesMiddleware::class]);
+        $core->setHandler(function ($r) {
+
+            /**
+             * @var ServerRequest $r
+             */
+            return $r->getCookieParams()['name'];
+        });
+
+        $value = 'cookie-value';
+
+        $response = $this->get($core, '/', [], [], ['name' => $value]);
+        $this->assertSame(200, $response->getStatusCode());
+        $this->assertSame('cookie-value', (string)$response->getBody());
+    }
+
+    public function testHMAC()
+    {
+        $this->container->bind(HttpConfig::class, new HttpConfig([
+            'basePath' => '/',
+            'headers'  => [],
+            'cookies'  => [
+                'domain'   => '.%s',
+                'method'   => HttpConfig::COOKIE_HMAC,
+                'excluded' => ['PHPSESSID', 'csrf-token']
+            ]
+        ]));
+
+        $core = $this->getCore([CookiesMiddleware::class]);
+        $core->setHandler(function ($r) {
+            $this->container->get(CookieQueue::class)->set('name', 'value');
+            return 'all good';
+        });
+
+        $response = $this->get($core, '/');
+        $this->assertSame(200, $response->getStatusCode());
+        $this->assertSame('all good', (string)$response->getBody());
+
+        $cookies = $this->fetchCookies($response);
+        $this->assertArrayHasKey('name', $cookies);
+
+        $core->setHandler(function ($r) {
+            return $r->getCookieParams()['name'];
+        });
+
+        $response = $this->get($core, '/', [], [], $cookies);
+        $this->assertSame(200, $response->getStatusCode());
+        $this->assertSame('value', (string)$response->getBody());
+
     }
 
     protected function getCore(array $middleware = []): HttpCore
