@@ -14,7 +14,6 @@ use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Spiral\Core\ScopeInterface;
 use Spiral\Http\Exceptions\PipelineException;
-use Spiral\Http\Traits\JsonTrait;
 use Spiral\Http\Traits\MiddlewaresTrait;
 
 /**
@@ -25,7 +24,7 @@ use Spiral\Http\Traits\MiddlewaresTrait;
  */
 class Pipeline implements RequestHandlerInterface, MiddlewareInterface
 {
-    use MiddlewaresTrait, JsonTrait;
+    use MiddlewaresTrait;
 
     /** @var ScopeInterface */
     private $scope;
@@ -57,18 +56,13 @@ class Pipeline implements RequestHandlerInterface, MiddlewareInterface
     {
         $pipeline = clone $this;
         $pipeline->target = $target;
-        $this->position = 0;
+        $pipeline->position = 0;
 
         return $pipeline;
     }
 
     /**
-     * Run pipeline in Middleware mode (wraps next middleware as pipeline target).
-     *
-     * @param Request                 $request
-     * @param RequestHandlerInterface $handler
-     *
-     * @return Response
+     * @inheritdoc
      */
     public function process(Request $request, RequestHandlerInterface $handler): Response
     {
@@ -81,7 +75,7 @@ class Pipeline implements RequestHandlerInterface, MiddlewareInterface
     public function handle(Request $request): Response
     {
         if (empty($this->target)) {
-            throw new PipelineException("Unable to run pipeline without given target.");
+            throw new PipelineException("Unable to run pipeline, no handler given.");
         }
 
         $position = $this->position++;

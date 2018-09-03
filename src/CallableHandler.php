@@ -17,7 +17,7 @@ use Spiral\Http\Traits\JsonTrait;
 /**
  * Provides ability to invoke any handler and write it's response into ResponseInterface.
  */
-class Handler implements RequestHandlerInterface
+class CallableHandler implements RequestHandlerInterface
 {
     use JsonTrait;
 

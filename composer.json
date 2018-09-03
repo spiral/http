@@ -14,6 +14,7 @@
     "spiral/core": "^1.0",
     "spiral/debug": "^1.1",
     "spiral/files": "^1.0",
+    "spiral/encrypter": "^1.0",
     "psr/http-message": "^1.0",
     "psr/http-factory": "^1.0",
     "psr/http-server-middleware": "^1.0",

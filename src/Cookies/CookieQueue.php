@@ -8,42 +8,27 @@
 
 namespace Spiral\Http\Cookies;
 
-use Psr\Http\Message\ServerRequestInterface;
-use Spiral\Http\Configs\HttpConfig;
-
 class CookieQueue
 {
     const ATTRIBUTE = 'cookieQueue';
 
-    /**
-     * Cookies has to be send (specified via global scope).
-     *
-     * @var Cookie[]
-     */
+    /** @var Cookie[] */
     private $scheduled = [];
 
-    /**
-     * @invisible
-     * @var HttpConfig
-     */
-    private $httpConfig = null;
+    /** @var string|null */
+    private $domain;
+
+    /** @var bool */
+    private $secure;
 
     /**
-     * Associated request (to fetch domain name from). Will not be modified.
-     *
-     * @invisible
-     * @var ServerRequestInterface
+     * @param string|null $domain
+     * @param bool        $secure
      */
-    private $request = null;
-
-    /**
-     * @param HttpConfig             $httpConfig
-     * @param ServerRequestInterface $request
-     */
-    public function __construct(HttpConfig $httpConfig, ServerRequestInterface $request)
+    public function __construct(?string $domain = null, bool $secure = false)
     {
-        $this->httpConfig = $httpConfig;
-        $this->request = $request;
+        $this->domain = $domain;
+        $this->secure = $secure;
     }
 
     /**
@@ -100,13 +85,11 @@ class CookieQueue
     ) {
         if (is_null($domain)) {
             //Let's resolve domain via config
-            $domain = $this->httpConfig->cookieDomain($this->request->getUri());
+            $domain = $this->domain;
         }
 
-        //Resolve cookie path?
-
         if (is_null($secure)) {
-            $secure = $this->request->getMethod() == 'https';
+            $secure = $this->secure;
         }
 
         return $this->schedule(
@@ -119,7 +102,7 @@ class CookieQueue
      *
      * @param Cookie $cookie
      *
-     * @return self|$this
+     * @return CookieQueue
      */
     public function schedule(Cookie $cookie): CookieQueue
     {

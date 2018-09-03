@@ -10,71 +10,64 @@ namespace Spiral\Http\Cookies;
 
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
+use Psr\Http\Server\MiddlewareInterface;
+use Psr\Http\Server\RequestHandlerInterface;
+use Spiral\Core\ScopeInterface;
+use Spiral\Encrypter\EncrypterInterface;
+use Spiral\Encrypter\Exceptions\DecryptException;
+use Spiral\Http\Configs\HttpConfig;
 
 /**
  * Middleware used to encrypt and decrypt cookies. Creates container scope for a cookie bucket.
  *
  * Attention, EncrypterInterface is requested from container on demand.
  */
-class CookieManager
+class CookieMiddleware implements MiddlewareInterface
 {
-    /**
-     * @var EncrypterInterface
-     */
+    /** @var HttpConfig */
+    private $config = null;
+
+    /** @var ScopeInterface */
+    private $scope = null;
+
+    /** @var EncrypterInterface */
     private $encrypter = null;
 
     /**
-     * @var HttpConfig
+     * @param HttpConfig         $config
+     * @param ScopeInterface     $scope
+     * @param EncrypterInterface $encrypter
      */
-    private $httpConfig = null;
-
-    /**
-     * @invisible
-     * @var ContainerInterface
-     */
-    protected $container = null;
-
-    /**
-     * @param HttpConfig         $httpConfig
-     * @param ContainerInterface $container Lazy access to encrypter.
-     */
-    public function __construct(HttpConfig $httpConfig, ContainerInterface $container)
+    public function __construct(HttpConfig $config, ScopeInterface $scope, EncrypterInterface $encrypter)
     {
-        $this->httpConfig = $httpConfig;
-        $this->container = $container;
+        $this->config = $config;
+        $this->scope = $scope;
     }
 
     /**
      * {@inheritdoc}
      */
-    public function __invoke(Request $request, Response $response, callable $next = null)
+    public function process(Request $request, RequestHandlerInterface $handler): Response
     {
         //Aggregates all user cookies
-        $queue = new CookieQueue($this->httpConfig, $request);
+        $queue = new CookieQueue(
+            $this->config->cookieDomain($request->getUri()),
+            $request->getUri()->getScheme() == "https"
+        );
 
-        //Opening cookie scope
-        $scope = $this->container->replace(CookieQueue::class, $queue);
-        try {
-            /**
-             * Debug: middleware creates scope for [CookieQueue].
-             */
-            $response = $next(
-                $this->unpackCookies($request)->withAttribute(CookieQueue::ATTRIBUTE, $queue),
-                $response
+        $response = $this->scope->runScope([], function () use ($request, $handler, $queue) {
+            return $handler->handle(
+                $this->unpackCookies($request)->withAttribute(CookieQueue::ATTRIBUTE, $queue)
             );
+        });
 
-            //New cookies
-            return $this->packCookies($response, $queue);
-        } finally {
-            $this->container->restore($scope);
-        }
+        return $this->packCookies($response, $queue);
     }
 
     /**
      * Unpack incoming cookies and decrypt their content.
      *
      * @param Request $request
-     *
      * @return Request
      */
     protected function unpackCookies(Request $request): Request
@@ -132,12 +125,12 @@ class CookieManager
      */
     protected function isProtected(string $cookie): bool
     {
-        if (in_array($cookie, $this->httpConfig->excludedCookies())) {
+        if (in_array($cookie, $this->config->cookiesExcluded())) {
             //Excluded
             return false;
         }
 
-        return $this->httpConfig->cookieProtection() != HttpConfig::COOKIE_UNPROTECTED;
+        return $this->config->cookieProtection() != HttpConfig::COOKIE_UNPROTECTED;
     }
 
     /**
@@ -147,13 +140,13 @@ class CookieManager
      */
     private function decodeCookie($cookie)
     {
-        if ($this->httpConfig->cookieProtection() == HttpConfig::COOKIE_ENCRYPT) {
+        if ($this->config->cookieProtection() == HttpConfig::COOKIE_ENCRYPT) {
             try {
                 if (is_array($cookie)) {
                     return array_map([$this, 'decodeCookie'], $cookie);
                 }
 
-                return $this->getEncrypter()->decrypt($cookie);
+                return $this->encrypter->decrypt($cookie);
             } catch (DecryptException $exception) {
                 return null;
             }
@@ -171,30 +164,15 @@ class CookieManager
     }
 
     /**
-     * Get or create encrypter instance.
-     *
-     * @return EncrypterInterface
-     */
-    protected function getEncrypter()
-    {
-        if (empty($this->encrypter)) {
-            //On demand creation (speed up app when no cookies were set)
-            $this->encrypter = $this->container->get(EncrypterInterface::class);
-        }
-
-        return $this->encrypter;
-    }
-
-    /**
      * @param Cookie $cookie
      *
      * @return Cookie
      */
     private function encodeCookie(Cookie $cookie): Cookie
     {
-        if ($this->httpConfig->cookieProtection() == HttpConfig::COOKIE_ENCRYPT) {
+        if ($this->config->cookieProtection() == HttpConfig::COOKIE_ENCRYPT) {
             return $cookie->withValue(
-                $this->getEncrypter()->encrypt($cookie->getValue())
+                $this->encrypter->encrypt($cookie->getValue())
             );
         }
 
@@ -211,10 +189,6 @@ class CookieManager
      */
     private function hmacSign($value): string
     {
-        return hash_hmac(
-            HttpConfig::HMAC_ALGORITHM,
-            $value,
-            $this->getEncrypter()->getKey()
-        );
+        return hash_hmac(HttpConfig::HMAC_ALGORITHM, $value, $this->encrypter->getKey());
     }
 }

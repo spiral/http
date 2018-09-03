@@ -9,6 +9,7 @@
 namespace Spiral\Http\Configs;
 
 use Psr\Http\Message\UriInterface;
+use Spiral\Core\Container\Autowire;
 use Spiral\Core\InjectableConfig;
 
 class HttpConfig extends InjectableConfig
@@ -19,8 +20,8 @@ class HttpConfig extends InjectableConfig
      * Cookie protection methods.
      */
     const COOKIE_UNPROTECTED = 0;
-    const COOKIE_ENCRYPT     = 1;
-    const COOKIE_HMAC        = 2;
+    const COOKIE_ENCRYPT = 1;
+    const COOKIE_HMAC = 2;
 
     /**
      * Algorithm used to sign cookies.
@@ -40,7 +41,7 @@ class HttpConfig extends InjectableConfig
         'cookies'     => [
             'domain'   => '.%s',
             'method'   => self::COOKIE_ENCRYPT,
-            'excluded' => []
+            'excluded' => ['PHPSESSID']
         ],
         'headers'     => [],
         'middlewares' => []
@@ -65,11 +66,11 @@ class HttpConfig extends InjectableConfig
     }
 
     /**
-     * Initial middlewares set.
+     * Initial middleware set.
      *
-     * @return array
+     * @return array|Autowire[]
      */
-    public function baseMiddlewares(): array
+    public function baseMiddleware(): array
     {
         return $this->config['middlewares'];
     }
@@ -111,5 +112,15 @@ class HttpConfig extends InjectableConfig
     public function cookieProtection(): int
     {
         return $this->config['cookies']['method'];
+    }
+
+    /**
+     * Cookies excluded from protection.
+     *
+     * @return array
+     */
+    public function cookiesExcluded(): array
+    {
+        return $this->config['cookies']['excluded'];
     }
 }
