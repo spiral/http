@@ -33,6 +33,26 @@ class CookieTest extends TestCase
         $this->assertTrue($cookie->isHttpOnly());
     }
 
+    public function testCreateStaticAccess()
+    {
+        $cookie = Cookie::create(
+            'cookie',
+            'value',
+            100,
+            '/',
+            '.domain.com',
+            true,
+            true
+        );
+
+        $this->assertSame('cookie', $cookie->getName());
+        $this->assertSame('value', $cookie->getValue());
+        $this->assertSame(time() + 100, $cookie->getExpires());
+        $this->assertSame('.domain.com', $cookie->getDomain());
+        $this->assertTrue($cookie->isSecure());
+        $this->assertTrue($cookie->isHttpOnly());
+    }
+
     public function testFallbackValues()
     {
         $cookie = new Cookie(
