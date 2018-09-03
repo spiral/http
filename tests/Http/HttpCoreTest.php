@@ -125,10 +125,10 @@ class HttpCoreTest extends TestCase
         $core->setHandler(function () {
             ob_start();
             ob_start();
+            echo "hello!";
             ob_start();
             ob_start();
 
-            echo "hello!";
             return "world ";
         });
 
