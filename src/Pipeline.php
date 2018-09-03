@@ -17,10 +17,7 @@ use Spiral\Http\Exceptions\PipelineException;
 use Spiral\Http\Traits\MiddlewareTrait;
 
 /**
- * Pipeline used to pass request and response thought the chain of middlewares.
- *
- * Spiral middlewares are similar to Laravel's one. However router and http itself
- * can be in used in zend expressive.
+ * Pipeline used to pass request and response thought the chain of middleware.
  */
 class Pipeline implements MiddlewareInterface
 {
