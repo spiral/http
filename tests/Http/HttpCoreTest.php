@@ -175,7 +175,6 @@ class HttpCoreTest extends TestCase
         $this->assertSame(["application/json"], $response->getHeader("Content-Type"));
     }
 
-
     public function testMiddleware()
     {
         $core = $this->getCore([HeaderMiddleware::class]);
@@ -187,6 +186,40 @@ class HttpCoreTest extends TestCase
         $response = $core->handle(new ServerRequest());
         $this->assertSame(["text/html;charset=UTF8"], $response->getHeader("Content-Type"));
         $this->assertSame(["Value*"], $response->getHeader("header"));
+        $this->assertSame("hello?", (string)$response->getBody());
+    }
+
+    public function testMiddlewareTrait()
+    {
+        $core = $this->getCore();
+
+        $core->getPipeline()->pushMiddleware(new Header2Middleware());
+        $core->getPipeline()->riseMiddleware(new HeaderMiddleware());
+
+        $core->setHandler(function () {
+            return "hello?";
+        });
+
+        $response = $core->handle(new ServerRequest());
+        $this->assertSame(["text/html;charset=UTF8"], $response->getHeader("Content-Type"));
+        $this->assertSame(["Value+", "Value*"], $response->getHeader("header"));
+        $this->assertSame("hello?", (string)$response->getBody());
+    }
+
+    public function testMiddlewareTraitReversed()
+    {
+        $core = $this->getCore();
+
+        $core->getPipeline()->pushMiddleware(new HeaderMiddleware());
+        $core->getPipeline()->riseMiddleware(new Header2Middleware());
+
+        $core->setHandler(function () {
+            return "hello?";
+        });
+
+        $response = $core->handle(new ServerRequest());
+        $this->assertSame(["text/html;charset=UTF8"], $response->getHeader("Content-Type"));
+        $this->assertSame(["Value*", "Value+"], $response->getHeader("header"));
         $this->assertSame("hello?", (string)$response->getBody());
     }
 
@@ -237,6 +270,14 @@ class HeaderMiddleware implements MiddlewareInterface
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
         return $handler->handle($request)->withAddedHeader("Header", "Value*");
+    }
+}
+
+class Header2Middleware implements MiddlewareInterface
+{
+    public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
+    {
+        return $handler->handle($request)->withAddedHeader("Header", "Value+");
     }
 }
 

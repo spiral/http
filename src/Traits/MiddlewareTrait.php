@@ -29,7 +29,6 @@ trait MiddlewareTrait
      * $this->http->pushMiddleware(new ProxyMiddleware());
      *
      * @param MiddlewareInterface $middleware
-     *
      * @return $this
      */
     public function pushMiddleware(MiddlewareInterface $middleware)
@@ -40,13 +39,12 @@ trait MiddlewareTrait
     }
 
     /**
-     * Add new middleware to the top chain.
+     * Add new middleware at the top chain.
      *
      * Example (in bootstrap):
      * $this->http->riseMiddleware(new ProxyMiddleware());
      *
      * @param MiddlewareInterface $middleware
-     *
      * @return $this
      */
     public function riseMiddleware(MiddlewareInterface $middleware)
