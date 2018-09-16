@@ -104,11 +104,11 @@ class ConfigTest extends TestCase
 
         $this->assertSame('.domain.com', $c->cookieDomain(new Uri('http://domain.com/')));
         $this->assertSame('.domain.com', $c->cookieDomain(new Uri('https://domain.com/')));
-        $this->assertSame('.domain.com:9090', $c->cookieDomain(new Uri('https://domain.com:9090/')));
+        $this->assertSame('.domain.com', $c->cookieDomain(new Uri('https://domain.com:9090/')));
         $this->assertSame(null, $c->cookieDomain(new Uri('/')));
-        $this->assertSame('localhost:9090', $c->cookieDomain(new Uri('localhost:9090/')));
+        $this->assertSame('localhost', $c->cookieDomain(new Uri('localhost:9090/')));
 
-        $this->assertSame('192.169.1.10:8080', $c->cookieDomain(new Uri('http://192.169.1.10:8080/')));
+        $this->assertSame('192.169.1.10', $c->cookieDomain(new Uri('http://192.169.1.10:8080/')));
 
         $c = new HttpConfig([
             'cookies' => [

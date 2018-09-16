@@ -99,6 +99,11 @@ class HttpConfig extends InjectableConfig
         }
 
         $pattern = $this->config['cookies']['domain'];
+        if (preg_match("/^(\d{1,3}){4}:\d+$/", $host, $matches)) {
+            // remove port
+            $host = $matches[1];
+        }
+
         if (filter_var($host, FILTER_VALIDATE_IP) || $host == 'localhost') {
             //We can't use sub-domains when website required by IP
             $pattern = ltrim($pattern, '.');
