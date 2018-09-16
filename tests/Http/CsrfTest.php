@@ -12,8 +12,11 @@ use Defuse\Crypto\Key;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ResponseInterface;
 use Spiral\Core\Container;
+use Spiral\Encrypter\Configs\EncrypterConfig;
 use Spiral\Encrypter\Encrypter;
+use Spiral\Encrypter\EncrypterFactory;
 use Spiral\Encrypter\EncrypterInterface;
+use Spiral\Encrypter\EncryptionInterface;
 use Spiral\Http\Configs\HttpConfig;
 use Spiral\Http\HttpCore;
 use Spiral\Http\Middleware\CookiesMiddleware;
@@ -47,9 +50,12 @@ class CsrfTest extends TestCase
             ]
         ]));
 
-        $this->container->bind(EncrypterInterface::class, new Encrypter(
-            Key::createNewRandomKey()->saveToAsciiSafeString()
-        ));
+        $this->container->bind(
+            EncryptionInterface::class,
+            new EncrypterFactory(new EncrypterConfig([
+                'key' => Key::createNewRandomKey()->saveToAsciiSafeString()
+            ]))
+        );
     }
 
     public function testGet()

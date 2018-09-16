@@ -12,8 +12,11 @@ use Defuse\Crypto\Key;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ResponseInterface;
 use Spiral\Core\Container;
+use Spiral\Encrypter\Configs\EncrypterConfig;
 use Spiral\Encrypter\Encrypter;
+use Spiral\Encrypter\EncrypterFactory;
 use Spiral\Encrypter\EncrypterInterface;
+use Spiral\Encrypter\EncryptionInterface;
 use Spiral\Http\Configs\HttpConfig;
 use Spiral\Http\Cookies\CookieQueue;
 use Spiral\Http\HttpCore;
@@ -46,9 +49,15 @@ class CookiesTest extends TestCase
             ]
         ]));
 
-        $this->container->bind(EncrypterInterface::class, new Encrypter(
-            Key::createNewRandomKey()->saveToAsciiSafeString()
-        ));
+        $this->container->bind(
+            EncrypterFactory::class,
+            new EncrypterFactory(new EncrypterConfig([
+                'key' => Key::createNewRandomKey()->saveToAsciiSafeString()
+            ]))
+        );
+
+        $this->container->bind(EncryptionInterface::class, EncrypterFactory::class);
+        $this->container->bind(EncrypterInterface::class, Encrypter::class);
     }
 
     public function testScope()
@@ -79,6 +88,7 @@ class CookiesTest extends TestCase
         $core = $this->getCore([CookiesMiddleware::class]);
         $core->setHandler(function ($r) {
             $this->container->get(CookieQueue::class)->set('name', 'value');
+
             return 'all good';
         });
 
@@ -88,7 +98,8 @@ class CookiesTest extends TestCase
 
         $cookies = $this->fetchCookies($response);
         $this->assertArrayHasKey('name', $cookies);
-        $this->assertSame('value', $this->container->get(EncrypterInterface::class)->decrypt($cookies['name']));
+        $this->assertSame('value',
+            $this->container->get(EncrypterInterface::class)->decrypt($cookies['name']));
     }
 
     public function testSetNotProtectedCookie()
@@ -96,6 +107,7 @@ class CookiesTest extends TestCase
         $core = $this->getCore([CookiesMiddleware::class]);
         $core->setHandler(function ($r) {
             $this->container->get(CookieQueue::class)->set('PHPSESSID', 'value');
+
             return 'all good';
         });
 
@@ -197,6 +209,7 @@ class CookiesTest extends TestCase
         $core = $this->getCore([CookiesMiddleware::class]);
         $core->setHandler(function ($r) {
             $this->container->get(CookieQueue::class)->set('name', 'value');
+
             return 'all good';
         });
 
@@ -252,6 +265,7 @@ class CookiesTest extends TestCase
         $core = $this->getCore([CookiesMiddleware::class]);
         $core->setHandler(function ($r) {
             $this->container->get(CookieQueue::class)->set('name', 'value');
+
             return 'all good';
         });
 
