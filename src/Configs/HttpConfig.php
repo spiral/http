@@ -22,8 +22,8 @@ class HttpConfig extends InjectableConfig
      * Cookie protection methods.
      */
     const COOKIE_UNPROTECTED = 0;
-    const COOKIE_ENCRYPT = 1;
-    const COOKIE_HMAC = 2;
+    const COOKIE_ENCRYPT     = 1;
+    const COOKIE_HMAC        = 2;
 
     /**
      * Algorithm used to sign cookies.
@@ -102,10 +102,6 @@ class HttpConfig extends InjectableConfig
         if (filter_var($host, FILTER_VALIDATE_IP) || $host == 'localhost') {
             //We can't use sub-domains when website required by IP
             $pattern = ltrim($pattern, '.');
-        }
-
-        if (!empty($port = $uri->getPort())) {
-            $host = $host . ':' . $port;
         }
 
         if (strpos($pattern, '%s') === false) {
