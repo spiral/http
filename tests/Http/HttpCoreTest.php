@@ -18,6 +18,7 @@ use Spiral\Http\CallableHandler;
 use Spiral\Http\Configs\HttpConfig;
 use Spiral\Http\HttpCore;
 use Spiral\Http\Pipeline;
+use Spiral\Http\ResponseFactory;
 use Zend\Diactoros\ServerRequest;
 
 class HttpCoreTest extends TestCase
@@ -72,7 +73,7 @@ class HttpCoreTest extends TestCase
         $core = $this->getCore();
         $core->setHandler(new CallableHandler(function () {
             return "hello world";
-        }, $core));
+        }, new TestFactory()));
 
         $response = $core->handle(new ServerRequest());
         $this->assertSame("hello world", (string)$response->getBody());
@@ -97,6 +98,7 @@ class HttpCoreTest extends TestCase
 
         $core->setHandler(function ($req, $resp) {
             echo "hello!";
+
             return $resp->withAddedHeader("hello", "value");
         });
 
@@ -113,6 +115,7 @@ class HttpCoreTest extends TestCase
         $core->setHandler(function ($req, $resp) {
             echo "hello!";
             $resp->getBody()->write("world ");
+
             return $resp->withAddedHeader("hello", "value");
         });
 
@@ -229,6 +232,7 @@ class HttpCoreTest extends TestCase
 
         $core->setHandler(function () {
             $this->assertTrue($this->container->has(ServerRequestInterface::class));
+
             return 'OK';
         });
 
@@ -255,25 +259,28 @@ class HttpCoreTest extends TestCase
 
     protected function getCore(array $middleware = []): HttpCore
     {
+        $config = new HttpConfig([
+            'basePath'   => '/',
+            'headers'    => [
+                'Content-Type' => 'text/html; charset=UTF-8'
+            ],
+            'middleware' => $middleware,
+            'cookies'    => [
+                'domain'   => '.%s',
+                'method'   => HttpConfig::COOKIE_ENCRYPT,
+                'excluded' => ['PHPSESSID', 'csrf-token']
+            ],
+            'csrf'       => [
+                'cookie'   => 'csrf-token',
+                'length'   => 16,
+                'lifetime' => 86400
+            ]
+        ]);
+
         return new HttpCore(
-            new HttpConfig([
-                'basePath'   => '/',
-                'headers'    => [
-                    'Content-Type' => 'text/html; charset=UTF-8'
-                ],
-                'middleware' => $middleware,
-                'cookies'    => [
-                    'domain'   => '.%s',
-                    'method'   => HttpConfig::COOKIE_ENCRYPT,
-                    'excluded' => ['PHPSESSID', 'csrf-token']
-                ],
-                'csrf'       => [
-                    'cookie'   => 'csrf-token',
-                    'length'   => 16,
-                    'lifetime' => 86400
-                ]
-            ]),
+            $config,
             new Pipeline($this->container),
+            new ResponseFactory($config),
             $this->container
         );
     }
@@ -281,16 +288,20 @@ class HttpCoreTest extends TestCase
 
 class HeaderMiddleware implements MiddlewareInterface
 {
-    public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
-    {
+    public function process(
+        ServerRequestInterface $request,
+        RequestHandlerInterface $handler
+    ): ResponseInterface {
         return $handler->handle($request)->withAddedHeader("Header", "Value*");
     }
 }
 
 class Header2Middleware implements MiddlewareInterface
 {
-    public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
-    {
+    public function process(
+        ServerRequestInterface $request,
+        RequestHandlerInterface $handler
+    ): ResponseInterface {
         return $handler->handle($request)->withAddedHeader("Header", "Value+");
     }
 }

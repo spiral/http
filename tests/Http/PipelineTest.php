@@ -25,7 +25,7 @@ class PipelineTest extends TestCase
 
         $handler = new CallableHandler(function () {
             return "response";
-        }, new ResponseFactory());
+        }, new TestFactory());
 
         $response = $pipeline->withHandler($handler)->handle(new ServerRequest());
 
@@ -40,7 +40,7 @@ class PipelineTest extends TestCase
 
         $handler = new CallableHandler(function () {
             return "response";
-        }, new ResponseFactory());
+        }, new TestFactory());
 
         $response = $pipeline->process(new ServerRequest(), $handler);
 
@@ -59,7 +59,7 @@ class PipelineTest extends TestCase
     }
 }
 
-class ResponseFactory implements ResponseFactoryInterface
+class TestFactory implements ResponseFactoryInterface
 {
     public function createResponse(int $code = 200, string $reasonPhrase = ''): ResponseInterface
     {

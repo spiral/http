@@ -15,15 +15,17 @@ use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Spiral\Http\Configs\HttpConfig;
 use Spiral\Http\Exceptions\HttpException;
-use Zend\Diactoros\Response;
 
-class HttpCore implements ResponseFactoryInterface, RequestHandlerInterface
+class HttpCore implements RequestHandlerInterface
 {
     /** @var HttpConfig */
     protected $config;
 
     /** @var Pipeline */
     protected $pipeline;
+
+    /** @var ResponseFactoryInterface */
+    protected $responseFactory;
 
     /** @var ContainerInterface */
     protected $container;
@@ -32,14 +34,20 @@ class HttpCore implements ResponseFactoryInterface, RequestHandlerInterface
     protected $handler;
 
     /**
-     * @param HttpConfig         $config
-     * @param Pipeline           $pipeline
-     * @param ContainerInterface $container
+     * @param HttpConfig               $config
+     * @param Pipeline                 $pipeline
+     * @param ResponseFactoryInterface $responseFactory
+     * @param ContainerInterface       $container
      */
-    public function __construct(HttpConfig $config, Pipeline $pipeline, ContainerInterface $container)
-    {
+    public function __construct(
+        HttpConfig $config,
+        Pipeline $pipeline,
+        ResponseFactoryInterface $responseFactory,
+        ContainerInterface $container
+    ) {
         $this->config = $config;
         $this->pipeline = $pipeline;
+        $this->responseFactory = $responseFactory;
         $this->container = $container;
 
         foreach ($this->config->baseMiddleware() as $middleware) {
@@ -64,9 +72,11 @@ class HttpCore implements ResponseFactoryInterface, RequestHandlerInterface
         if ($handler instanceof RequestHandlerInterface) {
             $this->handler = $handler;
         } elseif (is_callable($handler)) {
-            $this->handler = new CallableHandler($handler, $this);
+            $this->handler = new CallableHandler($handler, $this->responseFactory);
         } else {
-            throw new HttpException("Invalid handler is given, expects callable or RequestHandlerInterface.");
+            throw new HttpException(
+                "Invalid handler is given, expects callable or RequestHandlerInterface."
+            );
         }
 
         return $this;
@@ -85,23 +95,5 @@ class HttpCore implements ResponseFactoryInterface, RequestHandlerInterface
         }
 
         return $this->pipeline->withHandler($this->handler)->handle($request);
-    }
-
-    /**
-     * @param int    $code
-     * @param string $reasonPhrase
-     *
-     * @return ResponseInterface
-     */
-    public function createResponse(int $code = 200, string $reasonPhrase = ''): ResponseInterface
-    {
-        $response = new Response('php://memory', $code, []);
-        $response = $response->withStatus($code, $reasonPhrase);
-
-        foreach ($this->config->baseHeaders() as $header => $value) {
-            $response = $response->withAddedHeader($header, $value);
-        }
-
-        return $response;
     }
 }

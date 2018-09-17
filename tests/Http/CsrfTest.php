@@ -13,9 +13,7 @@ use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ResponseInterface;
 use Spiral\Core\Container;
 use Spiral\Encrypter\Configs\EncrypterConfig;
-use Spiral\Encrypter\Encrypter;
 use Spiral\Encrypter\EncrypterFactory;
-use Spiral\Encrypter\EncrypterInterface;
 use Spiral\Encrypter\EncryptionInterface;
 use Spiral\Http\Configs\HttpConfig;
 use Spiral\Http\HttpCore;
@@ -23,6 +21,7 @@ use Spiral\Http\Middleware\CookiesMiddleware;
 use Spiral\Http\Middleware\CsrfFirewall;
 use Spiral\Http\Middleware\CsrfMiddleware;
 use Spiral\Http\Pipeline;
+use Spiral\Http\ResponseFactory;
 use Zend\Diactoros\ServerRequest;
 
 class CsrfTest extends TestCase
@@ -182,7 +181,11 @@ class CsrfTest extends TestCase
 
     public function testPostOKCookieManagerEnabled()
     {
-        $core = $this->getCore([CookiesMiddleware::class, CsrfMiddleware::class, CsrfFirewall::class]);
+        $core = $this->getCore([
+            CookiesMiddleware::class,
+            CsrfMiddleware::class,
+            CsrfFirewall::class
+        ]);
         $core->setHandler(function () {
             return 'all good';
         });
@@ -208,25 +211,28 @@ class CsrfTest extends TestCase
 
     protected function getCore(array $middleware = []): HttpCore
     {
+        $config = new HttpConfig([
+            'basePath'   => '/',
+            'headers'    => [
+                'Content-Type' => 'text/html; charset=UTF-8'
+            ],
+            'middleware' => $middleware,
+            'cookies'    => [
+                'domain'   => '.%s',
+                'method'   => HttpConfig::COOKIE_ENCRYPT,
+                'excluded' => ['PHPSESSID', 'csrf-token']
+            ],
+            'csrf'       => [
+                'cookie'   => 'csrf-token',
+                'length'   => 16,
+                'lifetime' => 86400
+            ]
+        ]);
+
         return new HttpCore(
-            new HttpConfig([
-                'basePath'   => '/',
-                'headers'    => [
-                    'Content-Type' => 'text/html; charset=UTF-8'
-                ],
-                'middleware' => $middleware,
-                'cookies'    => [
-                    'domain'   => '.%s',
-                    'method'   => HttpConfig::COOKIE_ENCRYPT,
-                    'excluded' => ['PHPSESSID', 'csrf-token']
-                ],
-                'csrf'       => [
-                    'cookie'   => 'csrf-token',
-                    'length'   => 16,
-                    'lifetime' => 86400
-                ]
-            ]),
+            $config,
             new Pipeline($this->container),
+            new ResponseFactory($config),
             $this->container
         );
     }

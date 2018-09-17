@@ -22,6 +22,7 @@ use Spiral\Http\Cookies\CookieQueue;
 use Spiral\Http\HttpCore;
 use Spiral\Http\Middleware\CookiesMiddleware;
 use Spiral\Http\Pipeline;
+use Spiral\Http\ResponseFactory;
 use Zend\Diactoros\ServerRequest;
 
 class CookiesTest extends TestCase
@@ -288,25 +289,28 @@ class CookiesTest extends TestCase
 
     protected function getCore(array $middleware = []): HttpCore
     {
+        $config = new HttpConfig([
+            'basePath'   => '/',
+            'headers'    => [
+                'Content-Type' => 'text/html; charset=UTF-8'
+            ],
+            'middleware' => $middleware,
+            'cookies'    => [
+                'domain'   => '.%s',
+                'method'   => HttpConfig::COOKIE_ENCRYPT,
+                'excluded' => ['PHPSESSID', 'csrf-token']
+            ],
+            'csrf'       => [
+                'cookie'   => 'csrf-token',
+                'length'   => 16,
+                'lifetime' => 86400
+            ]
+        ]);
+
         return new HttpCore(
-            new HttpConfig([
-                'basePath'   => '/',
-                'headers'    => [
-                    'Content-Type' => 'text/html; charset=UTF-8'
-                ],
-                'middleware' => $middleware,
-                'cookies'    => [
-                    'domain'   => '.%s',
-                    'method'   => HttpConfig::COOKIE_ENCRYPT,
-                    'excluded' => ['PHPSESSID', 'csrf-token']
-                ],
-                'csrf'       => [
-                    'cookie'   => 'csrf-token',
-                    'length'   => 16,
-                    'lifetime' => 86400
-                ]
-            ]),
+            $config,
             new Pipeline($this->container),
+            new ResponseFactory($config),
             $this->container
         );
     }
