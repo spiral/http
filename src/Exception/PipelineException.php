@@ -6,9 +6,9 @@
  * @author    Anton Titov (Wolfy-J)
  */
 
-namespace Spiral\Http\Exceptions;
+namespace Spiral\Http\Exception;
 
-class CookieException extends HttpException
+class PipelineException extends HttpException
 {
 
 }

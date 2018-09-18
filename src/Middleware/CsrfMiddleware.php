@@ -13,8 +13,8 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 use Psr\Http\Message\UriInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
-use Spiral\Http\Configs\HttpConfig;
-use Spiral\Http\Cookies\Cookie;
+use Spiral\Http\Config\HttpConfig;
+use Spiral\Http\Cookie\Cookie;
 
 /**
  * Provides generic CSRF protection using cookie as token storage. Set "csrfToken" attribute to

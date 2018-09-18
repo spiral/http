@@ -6,17 +6,17 @@
  * @author    Anton Titov (Wolfy-J)
  */
 
-namespace Spiral\Http\Exceptions\ClientExceptions;
+namespace Spiral\Http\Exception\ClientException;
 
-use Spiral\Http\Exceptions\ClientException;
+use Spiral\Http\Exception\ClientException;
 
 /**
- * HTTP 404 exception.
+ * HTTP 403 exception.
  */
-class NotFoundException extends ClientException
+class ForbiddenException extends ClientException
 {
     /** @var int */
-    protected $code = ClientException::NOT_FOUND;
+    protected $code = ClientException::FORBIDDEN;
 
     /**
      * @param string $message

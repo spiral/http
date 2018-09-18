@@ -9,7 +9,7 @@
 namespace Spiral\Http\Tests;
 
 use PHPUnit\Framework\TestCase;
-use Spiral\Http\Configs\HttpConfig;
+use Spiral\Http\Config\HttpConfig;
 use Spiral\Http\Middleware\CookiesMiddleware;
 use Spiral\Http\Uri;
 

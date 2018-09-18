@@ -10,7 +10,7 @@ namespace Spiral\Http;
 
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ResponseInterface;
-use Spiral\Http\Configs\HttpConfig;
+use Spiral\Http\Config\HttpConfig;
 use Zend\Diactoros\Response;
 
 class ResponseFactory implements ResponseFactoryInterface

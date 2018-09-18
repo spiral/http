@@ -13,8 +13,8 @@ use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
-use Spiral\Http\Configs\HttpConfig;
-use Spiral\Http\Exceptions\HttpException;
+use Spiral\Http\Config\HttpConfig;
+use Spiral\Http\Exception\HttpException;
 
 class HttpCore implements RequestHandlerInterface
 {

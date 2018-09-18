@@ -6,9 +6,9 @@
  * @author    Anton Titov (Wolfy-J)
  */
 
-namespace Spiral\Http\Exceptions;
+namespace Spiral\Http\Exception;
 
-class PipelineException extends HttpException
+class HttpException extends \RuntimeException
 {
 
 }

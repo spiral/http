@@ -6,14 +6,12 @@
  * @author    Anton Titov (Wolfy-J)
  */
 
-namespace Spiral\Http\Exceptions;
-
-use Spiral\Core\Exceptions\RuntimeException;
+namespace Spiral\Http\Exception;
 
 /**
  * Raised when element can not be found using dot notation.
  */
-class DotNotFoundException extends RuntimeException
+class DotNotFoundException extends \RuntimeException
 {
 
 }

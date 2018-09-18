@@ -15,7 +15,7 @@ use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Spiral\Core\Container;
 use Spiral\Http\CallableHandler;
-use Spiral\Http\Configs\HttpConfig;
+use Spiral\Http\Config\HttpConfig;
 use Spiral\Http\HttpCore;
 use Spiral\Http\Pipeline;
 use Spiral\Http\ResponseFactory;
@@ -49,7 +49,7 @@ class HttpCoreTest extends TestCase
     }
 
     /**
-     * @expectedException \Spiral\Http\Exceptions\HttpException
+     * @expectedException \Spiral\Http\Exception\HttpException
      */
     public function testNoHandler()
     {
@@ -60,7 +60,7 @@ class HttpCoreTest extends TestCase
     }
 
     /**
-     * @expectedException \Spiral\Http\Exceptions\HttpException
+     * @expectedException \Spiral\Http\Exception\HttpException
      */
     public function testBadHandler()
     {

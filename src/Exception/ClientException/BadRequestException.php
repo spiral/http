@@ -6,9 +6,9 @@
  * @author    Anton Titov (Wolfy-J)
  */
 
-namespace Spiral\Http\Exceptions\ClientExceptions;
+namespace Spiral\Http\Exception\ClientException;
 
-use Spiral\Http\Exceptions\ClientException;
+use Spiral\Http\Exception\ClientException;
 
 /**
  * HTTP 400 exception.

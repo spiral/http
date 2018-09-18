@@ -14,10 +14,10 @@ use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Spiral\Core\ScopeInterface;
 use Spiral\Encrypter\EncryptionInterface;
-use Spiral\Encrypter\Exceptions\DecryptException;
-use Spiral\Http\Configs\HttpConfig;
-use Spiral\Http\Cookies\Cookie;
-use Spiral\Http\Cookies\CookieQueue;
+use Spiral\Encrypter\Exception\DecryptException;
+use Spiral\Http\Config\HttpConfig;
+use Spiral\Http\Cookie\Cookie;
+use Spiral\Http\Cookie\CookieQueue;
 
 /**
  * Middleware used to encrypt and decrypt cookies. Creates container scope for a cookie bucket.

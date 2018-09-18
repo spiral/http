@@ -50,7 +50,7 @@ class PipelineTest extends TestCase
     }
 
     /**
-     * @expectedException \Spiral\Http\Exceptions\PipelineException
+     * @expectedException \Spiral\Http\Exception\PipelineException
      */
     public function testHandleException()
     {

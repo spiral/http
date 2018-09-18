@@ -5,7 +5,7 @@
  * @license   MIT
  * @author    Anton Titov (Wolfy-J)
  */
-namespace Spiral\Http\Exceptions;
+namespace Spiral\Http\Exception;
 
 /**
  * Responder exceptions such as unability to generate response.

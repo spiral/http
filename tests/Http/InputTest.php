@@ -37,7 +37,7 @@ class InputManagerTest extends TestCase
     }
 
     /**
-     * @expectedException \Spiral\Core\Exceptions\ScopeException
+     * @expectedException \Spiral\Core\Exception\ScopeException
      */
     public function testCreateOutsideOfScope()
     {
@@ -249,7 +249,7 @@ class InputManagerTest extends TestCase
     }
 
     /**
-     * @expectedException \Spiral\Http\Exceptions\InputException
+     * @expectedException \Spiral\Http\Exception\InputException
      */
     public function testWrongBad()
     {

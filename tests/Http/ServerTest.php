@@ -180,7 +180,7 @@ class ServerTest extends TestCase
     }
 
     /**
-     * @expectedException \Spiral\Http\Exceptions\InputException
+     * @expectedException \Spiral\Http\Exception\InputException
      */
     public function testSetAndExceptions()
     {
@@ -193,7 +193,7 @@ class ServerTest extends TestCase
     }
 
     /**
-     * @expectedException \Spiral\Http\Exceptions\InputException
+     * @expectedException \Spiral\Http\Exception\InputException
      */
     public function testUnsetAndExceptions()
     {

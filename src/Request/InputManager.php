@@ -14,8 +14,8 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 use Psr\Http\Message\UploadedFileInterface;
 use Psr\Http\Message\UriInterface;
 use Spiral\Core\Container\SingletonInterface;
-use Spiral\Core\Exceptions\ScopeException;
-use Spiral\Http\Exceptions\InputException;
+use Spiral\Core\Exception\ScopeException;
+use Spiral\Http\Exception\InputException;
 
 /**
  * Provides simplistic way to access request input data in controllers and can also be used to

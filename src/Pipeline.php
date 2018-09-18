@@ -13,7 +13,7 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Spiral\Core\ScopeInterface;
-use Spiral\Http\Exceptions\PipelineException;
+use Spiral\Http\Exception\PipelineException;
 use Spiral\Http\Traits\MiddlewareTrait;
 
 /**

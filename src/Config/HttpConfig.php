@@ -6,7 +6,7 @@
  * @author    Anton Titov (Wolfy-J)
  */
 
-namespace Spiral\Http\Configs;
+namespace Spiral\Http\Config;
 
 use Psr\Http\Message\UriInterface;
 use Spiral\Core\Container\Autowire;

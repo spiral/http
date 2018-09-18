@@ -6,7 +6,7 @@
  * @author    Anton Titov (Wolfy-J)
  */
 
-namespace Spiral\Http\Exceptions;
+namespace Spiral\Http\Exception;
 
 /**
  * Exceptions in input manager.

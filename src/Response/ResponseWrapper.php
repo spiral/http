@@ -13,8 +13,8 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\StreamInterface;
 use Psr\Http\Message\UriInterface;
 use Spiral\Files\FilesInterface;
-use Spiral\Files\Streams\StreamableInterface;
-use Spiral\Http\Exceptions\ResponseException;
+use Spiral\Files\Stream\StreamableInterface;
+use Spiral\Http\Exception\ResponseException;
 use Spiral\Http\Traits\JsonTrait;
 use Zend\Diactoros\Stream;
 

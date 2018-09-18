@@ -13,7 +13,7 @@ use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\StreamInterface;
 use Spiral\Files\Files;
-use Spiral\Files\Streams\StreamableInterface;
+use Spiral\Files\Stream\StreamableInterface;
 use Spiral\Http\Response\ResponseWrapper;
 use Zend\Diactoros\Response;
 use Zend\Diactoros\Stream;
@@ -32,7 +32,7 @@ class ResponsesTest extends TestCase
     }
 
     /**
-     * @expectedException \Spiral\Http\Exceptions\ResponseException
+     * @expectedException \Spiral\Http\Exception\ResponseException
      */
     public function testRedirectException()
     {
@@ -102,7 +102,7 @@ class ResponsesTest extends TestCase
     }
 
     /**
-     * @expectedException \Spiral\Http\Exceptions\ResponseException
+     * @expectedException \Spiral\Http\Exception\ResponseException
      */
     public function testAttachmentStreamNoName()
     {
@@ -110,7 +110,7 @@ class ResponsesTest extends TestCase
     }
 
     /**
-     * @expectedException \Spiral\Http\Exceptions\ResponseException
+     * @expectedException \Spiral\Http\Exception\ResponseException
      */
     public function testAttachmentException()
     {

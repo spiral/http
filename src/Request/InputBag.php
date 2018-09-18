@@ -8,8 +8,8 @@
 
 namespace Spiral\Http\Request;
 
-use Spiral\Http\Exceptions\DotNotFoundException;
-use Spiral\Http\Exceptions\InputException;
+use Spiral\Http\Exception\DotNotFoundException;
+use Spiral\Http\Exception\InputException;
 
 /**
  * Generic data accessor, used to read properties of active request. Input bags provide ability to
