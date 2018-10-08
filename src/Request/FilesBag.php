@@ -9,7 +9,7 @@
 namespace Spiral\Http\Request;
 
 use Psr\Http\Message\UploadedFileInterface;
-use Spiral\Files\Stream\StreamWrapper;
+use Spiral\Streams\StreamWrapper;
 
 /**
  * Used to provide access to UploadedFiles property of request.

@@ -13,7 +13,7 @@ use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\StreamInterface;
 use Spiral\Files\Files;
-use Spiral\Files\Stream\StreamableInterface;
+use Spiral\Streams\StreamableInterface;
 use Spiral\Http\Response\ResponseWrapper;
 use Zend\Diactoros\Response;
 use Zend\Diactoros\Stream;

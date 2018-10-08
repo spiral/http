@@ -13,7 +13,7 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\StreamInterface;
 use Psr\Http\Message\UriInterface;
 use Spiral\Files\FilesInterface;
-use Spiral\Files\Stream\StreamableInterface;
+use Spiral\Streams\StreamableInterface;
 use Spiral\Http\Exception\ResponseException;
 use Spiral\Http\Traits\JsonTrait;
 use Zend\Diactoros\Stream;
@@ -151,6 +151,6 @@ class ResponseWrapper
             throw new ResponseException("Unable to allocate response body stream, file does not exist");
         }
 
-        return new Stream(fopen($this->files->localFilename($filename), 'r'));
+        return new Stream(fopen($filename, 'r'));
     }
 }
