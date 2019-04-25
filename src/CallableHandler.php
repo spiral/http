@@ -5,6 +5,7 @@
  * @license   MIT
  * @author    Anton Titov (Wolfy-J)
  */
+declare(strict_types=1);
 
 namespace Spiral\Http;
 
@@ -17,7 +18,7 @@ use Spiral\Http\Traits\JsonTrait;
 /**
  * Provides ability to invoke any handler and write it's response into ResponseInterface.
  */
-class CallableHandler implements RequestHandlerInterface
+final class CallableHandler implements RequestHandlerInterface
 {
     use JsonTrait;
 

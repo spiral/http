@@ -5,6 +5,7 @@
  * @license   MIT
  * @author    Anton Titov (Wolfy-J)
  */
+declare(strict_types=1);
 
 namespace Spiral\Http\Request;
 
@@ -34,7 +35,7 @@ use Spiral\Http\Exception\InputException;
  * @property-read ServerBag  $server
  * @property-read InputBag   $attributes
  */
-class InputManager implements SingletonInterface
+final class InputManager implements SingletonInterface
 {
     /**
      * Associations between bags and representing class/request method.

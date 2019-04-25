@@ -5,6 +5,7 @@
  * @license   MIT
  * @author    Anton Titov (Wolfy-J)
  */
+declare(strict_types=1);
 
 namespace Spiral\Http;
 
@@ -16,7 +17,7 @@ use Psr\Http\Server\RequestHandlerInterface;
 use Spiral\Http\Config\HttpConfig;
 use Spiral\Http\Exception\HttpException;
 
-class HttpCore implements RequestHandlerInterface
+final class HttpCore implements RequestHandlerInterface
 {
     /** @var HttpConfig */
     protected $config;

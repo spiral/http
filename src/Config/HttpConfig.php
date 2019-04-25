@@ -5,6 +5,7 @@
  * @license   MIT
  * @author    Anton Titov (Wolfy-J)
  */
+declare(strict_types=1);
 
 namespace Spiral\Http\Config;
 
@@ -14,7 +15,7 @@ use Spiral\Core\InjectableConfig;
 use Spiral\Http\Middleware\CookiesMiddleware;
 use Spiral\Http\Middleware\CsrfMiddleware;
 
-class HttpConfig extends InjectableConfig
+final class HttpConfig extends InjectableConfig
 {
     const CONFIG = 'http';
 

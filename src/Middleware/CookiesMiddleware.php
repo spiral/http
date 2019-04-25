@@ -5,6 +5,8 @@
  * @license   MIT
  * @author    Anton Titov (Wolfy-J)
  */
+declare(strict_types=1);
+
 
 namespace Spiral\Http\Middleware;
 
@@ -24,7 +26,7 @@ use Spiral\Http\Cookie\CookieQueue;
  *
  * Attention, EncrypterInterface is requested from container on demand.
  */
-class CookiesMiddleware implements MiddlewareInterface
+final class CookiesMiddleware implements MiddlewareInterface
 {
     /** @var HttpConfig */
     private $config = null;

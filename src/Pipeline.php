@@ -5,6 +5,7 @@
  * @license   MIT
  * @author    Anton Titov (Wolfy-J)
  */
+declare(strict_types=1);
 
 namespace Spiral\Http;
 
@@ -19,7 +20,7 @@ use Spiral\Http\Traits\MiddlewareTrait;
 /**
  * Pipeline used to pass request and response thought the chain of middleware.
  */
-class Pipeline implements RequestHandlerInterface, MiddlewareInterface
+final class Pipeline implements RequestHandlerInterface, MiddlewareInterface
 {
     use MiddlewareTrait;
 

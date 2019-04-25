@@ -5,6 +5,7 @@
  * @license   MIT
  * @author    Anton Titov (Wolfy-J)
  */
+declare(strict_types=1);
 
 namespace Spiral\Http\Middleware;
 
@@ -24,7 +25,7 @@ use Spiral\Http\Cookie\Cookie;
  *
  * @see https://www.owasp.org/index.php/Cross-Site_Request_Forgery_(CSRF)_Prevention_Cheat_Sheet#Double_Submit_Cookie
  */
-class CsrfMiddleware implements MiddlewareInterface
+final class CsrfMiddleware implements MiddlewareInterface
 {
     const ATTRIBUTE = 'csrfToken';
 

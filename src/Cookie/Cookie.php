@@ -5,6 +5,7 @@
  * @license   MIT
  * @author    Anton Titov (Wolfy-J)
  */
+declare(strict_types=1);
 
 namespace Spiral\Http\Cookie;
 
@@ -242,9 +243,7 @@ final class Cookie
      */
     public function createHeader(): string
     {
-        $header = [
-            rawurlencode($this->name) . '=' . rawurlencode($this->value)
-        ];
+        $header = [rawurlencode($this->name) . '=' . rawurlencode((string)$this->value)];
 
         if ($this->lifetime !== null) {
             $header[] = 'Expires=' . gmdate(\DateTime::COOKIE, $this->getExpires());

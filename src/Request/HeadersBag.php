@@ -5,6 +5,7 @@
  * @license   MIT
  * @author    Anton Titov (Wolfy-J)
  */
+declare(strict_types=1);
 
 namespace Spiral\Http\Request;
 
@@ -12,7 +13,7 @@ namespace Spiral\Http\Request;
  * Provides access to headers property of server request, will normalize every requested name for
  * use convenience.
  */
-class HeadersBag extends InputBag
+final class HeadersBag extends InputBag
 {
     /**
      * {@inheritdoc}

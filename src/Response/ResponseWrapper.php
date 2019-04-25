@@ -5,6 +5,7 @@
  * @license   MIT
  * @author    Anton Titov (Wolfy-J)
  */
+declare(strict_types=1);
 
 namespace Spiral\Http\Response;
 
@@ -13,15 +14,15 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\StreamInterface;
 use Psr\Http\Message\UriInterface;
 use Spiral\Files\FilesInterface;
-use Spiral\Streams\StreamableInterface;
 use Spiral\Http\Exception\ResponseException;
 use Spiral\Http\Traits\JsonTrait;
+use Spiral\Streams\StreamableInterface;
 use Zend\Diactoros\Stream;
 
 /**
  * Provides ability to write content into currently active (resolved using container) response.
  */
-class ResponseWrapper
+final class ResponseWrapper
 {
     use JsonTrait;
 

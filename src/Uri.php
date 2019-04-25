@@ -5,10 +5,11 @@
  * @license   MIT
  * @author    Anton Titov (Wolfy-J)
  */
+declare(strict_types=1);
 
 namespace Spiral\Http;
 
-class Uri extends \Zend\Diactoros\Uri implements \JsonSerializable
+final class Uri extends \Zend\Diactoros\Uri implements \JsonSerializable
 {
     /**
      * @return string
