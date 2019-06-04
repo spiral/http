@@ -19,6 +19,7 @@ use Spiral\Http\Config\HttpConfig;
 use Spiral\Http\HttpCore;
 use Spiral\Http\Pipeline;
 use Spiral\Http\ResponseFactory;
+use Zend\Diactoros\Response;
 use Zend\Diactoros\ServerRequest;
 
 class HttpCoreTest extends TestCase
@@ -280,7 +281,7 @@ class HttpCoreTest extends TestCase
         return new HttpCore(
             $config,
             new Pipeline($this->container),
-            new ResponseFactory($config),
+            new ResponseFactory($config, new Response()),
             $this->container
         );
     }

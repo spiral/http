@@ -23,6 +23,7 @@ use Spiral\Http\HttpCore;
 use Spiral\Http\Middleware\CookiesMiddleware;
 use Spiral\Http\Pipeline;
 use Spiral\Http\ResponseFactory;
+use Zend\Diactoros\Response;
 use Zend\Diactoros\ServerRequest;
 
 class CookiesTest extends TestCase
@@ -310,7 +311,7 @@ class CookiesTest extends TestCase
         return new HttpCore(
             $config,
             new Pipeline($this->container),
-            new ResponseFactory($config),
+            new ResponseFactory($config, new Response()),
             $this->container
         );
     }

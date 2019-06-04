@@ -12,19 +12,25 @@ namespace Spiral\Http;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ResponseInterface;
 use Spiral\Http\Config\HttpConfig;
-use Zend\Diactoros\Response;
 
 final class ResponseFactory implements ResponseFactoryInterface
 {
     /** @var HttpConfig */
-    protected $config;
+    private $config;
+
+    /** @var \Psr\Http\Message\ResponseInterface */
+    private $response;
 
     /**
-     * @param HttpConfig $config
+     * ResponseFactory constructor.
+     *
+     * @param \Spiral\Http\Config\HttpConfig      $config
+     * @param \Psr\Http\Message\ResponseInterface $response
      */
-    public function __construct(HttpConfig $config)
+    public function __construct(HttpConfig $config, ResponseInterface $response)
     {
         $this->config = $config;
+        $this->response = $response;
     }
 
     /**
@@ -35,7 +41,7 @@ final class ResponseFactory implements ResponseFactoryInterface
      */
     public function createResponse(int $code = 200, string $reasonPhrase = ''): ResponseInterface
     {
-        $response = new Response('php://memory', $code, []);
+        $response = $this->response->withBody(new Stream('php://memory', 'rw'));
         $response = $response->withStatus($code, $reasonPhrase);
 
         foreach ($this->config->baseHeaders() as $header => $value) {

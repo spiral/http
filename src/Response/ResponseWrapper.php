@@ -15,9 +15,9 @@ use Psr\Http\Message\StreamInterface;
 use Psr\Http\Message\UriInterface;
 use Spiral\Files\FilesInterface;
 use Spiral\Http\Exception\ResponseException;
+use Spiral\Http\Stream;
 use Spiral\Http\Traits\JsonTrait;
 use Spiral\Streams\StreamableInterface;
-use Zend\Diactoros\Stream;
 
 /**
  * Provides ability to write content into currently active (resolved using container) response.
@@ -47,6 +47,7 @@ final class ResponseWrapper
      *
      * @param UriInterface|string $uri
      * @param int                 $code
+     *
      * @return ResponseInterface
      *
      * @throws ResponseException
