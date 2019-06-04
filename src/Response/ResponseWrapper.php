@@ -33,11 +33,15 @@ final class ResponseWrapper
     protected $files = null;
 
     /**
-     * @param ResponseFactoryInterface $responseFactory
-     * @param FilesInterface           $files
+     * ResponseWrapper constructor.
+     *
+     * @param \Psr\Http\Message\ResponseFactoryInterface $responseFactory
+     * @param \Spiral\Files\FilesInterface               $files
      */
-    public function __construct(ResponseFactoryInterface $responseFactory, FilesInterface $files)
-    {
+    public function __construct(
+        ResponseFactoryInterface $responseFactory,
+        FilesInterface $files
+    ) {
         $this->responseFactory = $responseFactory;
         $this->files = $files;
     }
@@ -63,11 +67,10 @@ final class ResponseWrapper
 
     /**
      * Write json data into response.
+     * @param     $data
+     * @param int $code
      *
-     * @param mixed $data
-     * @param int   $code
-     *
-     * @return ResponseInterface
+     * @return \Psr\Http\Message\ResponseInterface
      */
     public function json($data, int $code = 200): ResponseInterface
     {
@@ -116,16 +119,13 @@ final class ResponseWrapper
     /**
      * Write html content into response and set content-type header.
      *
-     * @param string $body
+     * @param string $html
      *
      * @return ResponseInterface
      */
-    public function html(string $body): ResponseInterface
+    public function html(string $html): ResponseInterface
     {
-        $response = $this->responseFactory->createResponse();
-        $response->getBody()->write($body);
-
-        return $response->withHeader('Content-type', 'text/html; charset=UTF-8');
+        return new HtmlResponse($html);
     }
 
     /**

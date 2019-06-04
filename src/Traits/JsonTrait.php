@@ -10,6 +10,7 @@ declare(strict_types=1);
 namespace Spiral\Http\Traits;
 
 use Psr\Http\Message\ResponseInterface;
+use Spiral\Http\Response\JsonResponse;
 
 /**
  * Provides ability to write json payloads into responses.
@@ -19,11 +20,11 @@ trait JsonTrait
     /**
      * Generate JSON response.
      *
-     * @param ResponseInterface $response
-     * @param mixed             $json
-     * @param int               $code
+     * @param \Psr\Http\Message\ResponseInterface $response
+     * @param                                     $json
+     * @param int                                 $code
      *
-     * @return ResponseInterface
+     * @return \Psr\Http\Message\ResponseInterface
      */
     private function writeJson(
         ResponseInterface $response,
@@ -38,11 +39,11 @@ trait JsonTrait
             $code = $json['status'];
         }
 
-        $response->getBody()->write(json_encode($json));
-
-        return $response->withStatus($code)->withHeader(
+        $response = $response->withHeader(
             'Content-Type',
             'application/json'
         );
+
+        return new JsonResponse($json, $code, $response->getHeaders());
     }
 }

@@ -242,6 +242,8 @@ class Stream implements StreamInterface
             throw new RuntimeException('Stream is not writable');
         }
 
+        $string = is_null($string) ? "" : $string;
+
         $result = fwrite($this->resource, $string);
 
         if (false === $result) {

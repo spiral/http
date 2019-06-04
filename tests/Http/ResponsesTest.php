@@ -13,10 +13,12 @@ use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\StreamInterface;
 use Spiral\Files\Files;
-use Spiral\Streams\StreamableInterface;
+use Spiral\Http\Json\JsonEncoder;
+use Spiral\Http\Response\Response;
 use Spiral\Http\Response\ResponseWrapper;
-use Zend\Diactoros\Response;
-use Zend\Diactoros\Stream;
+use Spiral\Http\Stream;
+use Spiral\Streams\StreamableInterface;
+
 
 class ResponsesTest extends TestCase
 {
@@ -46,16 +48,17 @@ class ResponsesTest extends TestCase
             'message' => 'hi'
         ]);
 
-        $this->assertSame('{"status":300,"message":"hi"}', (string)$response->getBody());
+        $this->assertSame('{"status":300,"message":"hi"}', (string)$response->getBody()->getContents());
         $this->assertSame(300, $response->getStatusCode());
     }
 
     public function testHtml()
     {
         $response = $this->getWrapper()->html('hello world');
-        $this->assertSame('hello world', (string)$response->getBody());
+        $this->assertSame('hello world', (string)$response->getBody()->getContents());
         $this->assertSame(200, $response->getStatusCode());
-        $this->assertSame(["text/html; charset=UTF-8"], $response->getHeader("Content-Type"));
+        $ff = $response->getHeader("Content-Type");
+        $this->assertSame(["text/html; charset=utf-8"], $response->getHeader("Content-Type"));
     }
 
     public function testAttachment()

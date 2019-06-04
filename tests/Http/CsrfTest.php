@@ -22,7 +22,6 @@ use Spiral\Http\Middleware\CsrfFirewall;
 use Spiral\Http\Middleware\CsrfMiddleware;
 use Spiral\Http\Pipeline;
 use Spiral\Http\ResponseFactory;
-use Zend\Diactoros\Response;
 use Zend\Diactoros\ServerRequest;
 
 class CsrfTest extends TestCase
@@ -233,7 +232,7 @@ class CsrfTest extends TestCase
         return new HttpCore(
             $config,
             new Pipeline($this->container),
-            new ResponseFactory($config, new Response()),
+            new ResponseFactory($config),
             $this->container
         );
     }
