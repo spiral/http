@@ -26,11 +26,11 @@ trait InjectContentTypeTrait
     private function injectContentType($contentType, array $headers)
     {
         $hasContentType = array_reduce(array_keys($headers), function ($carry, $item) {
-            return $carry ?: (strtolower($item) === 'content-type');
+            return $carry ?: (strtolower($item) === 'Content-Type');
         }, false);
 
         if (!$hasContentType) {
-            $headers['content-type'] = [$contentType];
+            $headers['Content-Type'] = [$contentType];
         }
 
         return $headers;

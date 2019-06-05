@@ -9,6 +9,7 @@ declare(strict_types=1);
 
 namespace Spiral\Http\Traits;
 
+use JsonSerializable;
 use Psr\Http\Message\ResponseInterface;
 use Spiral\Http\Response\JsonResponse;
 
@@ -31,18 +32,13 @@ trait JsonTrait
         $json,
         int $code = 200
     ): ResponseInterface {
-        if ($json instanceof \JsonSerializable) {
+        if ($json instanceof JsonSerializable) {
             $json = $json->jsonSerialize();
         }
 
         if (is_array($json) && isset($json['status'])) {
             $code = $json['status'];
         }
-
-        $response = $response->withHeader(
-            'Content-Type',
-            'application/json'
-        );
 
         return new JsonResponse($json, $code, $response->getHeaders());
     }
