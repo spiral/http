@@ -9,6 +9,7 @@ declare(strict_types=1);
 
 namespace Spiral\Http\Traits;
 
+use JsonSerializable;
 use Psr\Http\Message\ResponseInterface;
 
 /**
@@ -20,29 +21,22 @@ trait JsonTrait
      * Generate JSON response.
      *
      * @param ResponseInterface $response
-     * @param mixed             $json
+     * @param mixed             $payload
      * @param int               $code
-     *
      * @return ResponseInterface
      */
-    private function writeJson(
-        ResponseInterface $response,
-        $json,
-        int $code = 200
-    ): ResponseInterface {
-        if ($json instanceof \JsonSerializable) {
-            $json = $json->jsonSerialize();
+    private function writeJson(ResponseInterface $response, $payload, int $code = 200): ResponseInterface
+    {
+        if ($payload instanceof JsonSerializable) {
+            $payload = $payload->jsonSerialize();
         }
 
-        if (is_array($json) && isset($json['status'])) {
-            $code = $json['status'];
+        if (is_array($payload) && isset($payload['status'])) {
+            $code = $payload['status'];
         }
 
-        $response->getBody()->write(json_encode($json));
+        $response->getBody()->write(json_encode($payload));
 
-        return $response->withStatus($code)->withHeader(
-            'Content-Type',
-            'application/json'
-        );
+        return $response->withStatus($code)->withHeader('Content-Type', 'application/json');
     }
 }

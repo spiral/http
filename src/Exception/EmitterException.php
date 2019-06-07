@@ -7,10 +7,10 @@
  */
 declare(strict_types=1);
 
-
 namespace Spiral\Http\Exception;
 
-class CookieException extends HttpException
+// todo: license to zend
+class EmitterException extends \RuntimeException
 {
 
 }

@@ -57,7 +57,6 @@ class InputBag implements \Countable, \IteratorAggregate, \ArrayAccess
      * Get element using dot notation.
      *
      * @param string $name
-     *
      * @return mixed|null
      *
      * @throws DotNotFoundException
@@ -100,7 +99,6 @@ class InputBag implements \Countable, \IteratorAggregate, \ArrayAccess
      * @param array $keys
      * @param bool  $fill Fill missing key with filler value.
      * @param mixed $filler
-     *
      * @return array
      */
     public function fetch(array $keys, bool $fill = false, $filler = null)
@@ -125,7 +123,6 @@ class InputBag implements \Countable, \IteratorAggregate, \ArrayAccess
      * Check if field presented (can be empty) by it's name. Dot notation allowed.
      *
      * @param string $name
-     *
      * @return bool
      */
     public function has(string $name): bool
@@ -152,7 +149,6 @@ class InputBag implements \Countable, \IteratorAggregate, \ArrayAccess
      *
      * @param string $name
      * @param mixed  $default
-     *
      * @return mixed
      */
     public function get(string $name, $default = null)

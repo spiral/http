@@ -7,17 +7,17 @@
  */
 declare(strict_types=1);
 
-namespace Spiral\Http\Response;
+namespace Spiral\Http;
 
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\StreamFactoryInterface;
 use Psr\Http\Message\StreamInterface;
 use Psr\Http\Message\UriInterface;
 use Spiral\Files\FilesInterface;
 use Spiral\Http\Exception\ResponseException;
 use Spiral\Http\Traits\JsonTrait;
 use Spiral\Streams\StreamableInterface;
-use Zend\Diactoros\Stream;
 
 /**
  * Provides ability to write content into currently active (resolved using container) response.
@@ -27,18 +27,26 @@ final class ResponseWrapper
     use JsonTrait;
 
     /** @var ResponseFactoryInterface */
-    protected $responseFactory = null;
+    private $responseFactory;
+
+    /** @var StreamFactoryInterface */
+    private $streamFactory;
 
     /** @var FilesInterface */
-    protected $files = null;
+    private $files;
 
     /**
      * @param ResponseFactoryInterface $responseFactory
+     * @param StreamFactoryInterface   $streamFactory
      * @param FilesInterface           $files
      */
-    public function __construct(ResponseFactoryInterface $responseFactory, FilesInterface $files)
-    {
+    public function __construct(
+        ResponseFactoryInterface $responseFactory,
+        StreamFactoryInterface $streamFactory,
+        FilesInterface $files
+    ) {
         $this->responseFactory = $responseFactory;
+        $this->streamFactory = $streamFactory;
         $this->files = $files;
     }
 
@@ -63,9 +71,8 @@ final class ResponseWrapper
     /**
      * Write json data into response.
      *
-     * @param mixed $data
-     * @param int   $code
-     *
+     * @param     $data
+     * @param int $code
      * @return ResponseInterface
      */
     public function json($data, int $code = 200): ResponseInterface
@@ -81,7 +88,6 @@ final class ResponseWrapper
      *                                                             filename. Name is mandratory when filename supplied
      *                                                             in a form of stream or resource.
      * @param string                                     $mime
-     *
      * @return ResponseInterface
      *
      * @throws ResponseException
@@ -115,43 +121,46 @@ final class ResponseWrapper
     /**
      * Write html content into response and set content-type header.
      *
-     * @param string $body
-     *
+     * @param string $html
+     * @param int    $code
+     * @param string $contentType
      * @return ResponseInterface
      */
-    public function html(string $body): ResponseInterface
-    {
-        $response = $this->responseFactory->createResponse();
-        $response->getBody()->write($body);
+    public function html(
+        string $html,
+        int $code = 200,
+        string $contentType = 'text/html; charset=utf-8'
+    ): ResponseInterface {
+        $response = $this->responseFactory->createResponse($code);
+        $response->getBody()->write($html);
 
-        return $response->withHeader('Content-type', 'text/html; charset=UTF-8');
+        return $response->withHeader('Content-Type', $contentType);
     }
 
     /**
      * Create stream for given filename.
      *
-     * @param string|StreamInterface|StreamableInterface $filename
-     *
+     * @param string|StreamInterface|StreamableInterface $file
      * @return StreamInterface
      */
-    private function getStream($filename): StreamInterface
+    private function getStream($file): StreamInterface
     {
-        if ($filename instanceof StreamableInterface) {
-            return $filename->getStream();
+        if ($file instanceof StreamableInterface) {
+            return $file->getStream();
         }
 
-        if ($filename instanceof StreamInterface) {
-            return $filename;
+        if ($file instanceof StreamInterface) {
+            return $file;
         }
 
-        if (is_resource($filename)) {
-            return new Stream($filename, 'r');
+        if (is_resource($file)) {
+            return $this->streamFactory->createStreamFromResource($file);
         }
 
-        if (!$this->files->isFile($filename)) {
+        if (!$this->files->isFile($file)) {
             throw new ResponseException("Unable to allocate response body stream, file does not exist");
         }
 
-        return new Stream(fopen($filename, 'r'));
+        return $this->streamFactory->createStreamFromFile($file);
     }
 }

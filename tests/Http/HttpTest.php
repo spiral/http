@@ -16,12 +16,12 @@ use Psr\Http\Server\RequestHandlerInterface;
 use Spiral\Core\Container;
 use Spiral\Http\CallableHandler;
 use Spiral\Http\Config\HttpConfig;
-use Spiral\Http\HttpCore;
+use Spiral\Http\Http;
 use Spiral\Http\Pipeline;
-use Spiral\Http\ResponseFactory;
+use Spiral\Http\Tests\Diactoros\ResponseFactory;
 use Zend\Diactoros\ServerRequest;
 
-class HttpCoreTest extends TestCase
+class HttpTest extends TestCase
 {
     private $container;
 
@@ -73,7 +73,7 @@ class HttpCoreTest extends TestCase
         $core = $this->getCore();
         $core->setHandler(new CallableHandler(function () {
             return "hello world";
-        }, new TestFactory()));
+        }, new ResponseFactory(new HttpConfig(['headers' => []]))));
 
         $response = $core->handle(new ServerRequest());
         $this->assertSame("hello world", (string)$response->getBody());
@@ -257,7 +257,7 @@ class HttpCoreTest extends TestCase
         $this->assertSame(["value"], $response->getHeader("hello"));
     }
 
-    protected function getCore(array $middleware = []): HttpCore
+    protected function getCore(array $middleware = []): Http
     {
         $config = new HttpConfig([
             'basePath'   => '/',
@@ -265,19 +265,9 @@ class HttpCoreTest extends TestCase
                 'Content-Type' => 'text/html; charset=UTF-8'
             ],
             'middleware' => $middleware,
-            'cookies'    => [
-                'domain'   => '.%s',
-                'method'   => HttpConfig::COOKIE_ENCRYPT,
-                'excluded' => ['PHPSESSID', 'csrf-token']
-            ],
-            'csrf'       => [
-                'cookie'   => 'csrf-token',
-                'length'   => 16,
-                'lifetime' => 86400
-            ]
         ]);
 
-        return new HttpCore(
+        return new Http(
             $config,
             new Pipeline($this->container),
             new ResponseFactory($config),

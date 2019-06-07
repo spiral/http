@@ -7,7 +7,7 @@
  */
 declare(strict_types=1);
 
-namespace Spiral\Http;
+namespace Spiral\Http\Tests\Diactoros;
 
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ResponseInterface;
@@ -38,7 +38,7 @@ final class ResponseFactory implements ResponseFactoryInterface
         $response = new Response('php://memory', $code, []);
         $response = $response->withStatus($code, $reasonPhrase);
 
-        foreach ($this->config->baseHeaders() as $header => $value) {
+        foreach ($this->config->getBaseHeaders() as $header => $value) {
             $response = $response->withAddedHeader($header, $value);
         }
 

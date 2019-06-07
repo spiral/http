@@ -78,13 +78,16 @@ final class InputManager implements SingletonInterface
      * @var Request
      */
     protected $request = null;
+
     /**
      * @invisible
      * @var ContainerInterface
      */
     protected $container = null;
+
     /** @var InputBag[] */
     private $bags = [];
+
     /**
      * Prefix to add for each input request.
      *
@@ -106,7 +109,6 @@ final class InputManager implements SingletonInterface
      *
      * @param string $prefix
      * @param bool   $add
-     *
      * @return InputManager
      */
     public function withPrefix(string $prefix, bool $add = true): self
@@ -237,7 +239,6 @@ final class InputManager implements SingletonInterface
 
     /**
      * @param string $name
-     *
      * @return InputBag
      */
     public function __get(string $name): InputBag
@@ -249,7 +250,6 @@ final class InputManager implements SingletonInterface
      * Get bag instance or create new one on demand.
      *
      * @param string $name
-     *
      * @return InputBag
      */
     public function bag(string $name): InputBag
@@ -279,7 +279,6 @@ final class InputManager implements SingletonInterface
      * @param string      $name
      * @param mixed       $default
      * @param bool|string $implode Implode header lines, false to return header as array.
-     *
      * @return mixed
      */
     public function header(string $name, $default = null, $implode = ',')
@@ -288,12 +287,11 @@ final class InputManager implements SingletonInterface
     }
 
     /**
-     * @see data()
-     *
      * @param string $name
      * @param mixed  $default
-     *
      * @return mixed
+     *
+     * @see data()
      */
     public function post(string $name, $default = null)
     {
@@ -316,7 +314,6 @@ final class InputManager implements SingletonInterface
      *
      * @param string $name
      * @param mixed  $default
-     *
      * @return mixed
      */
     public function input(string $name, $default = null)
@@ -327,7 +324,7 @@ final class InputManager implements SingletonInterface
     /**
      * @param string $name
      * @param mixed  $default
-     *
+
      * @return mixed
      */
     public function query(string $name, $default = null)
@@ -338,7 +335,7 @@ final class InputManager implements SingletonInterface
     /**
      * @param string $name
      * @param mixed  $default
-     *
+     
      * @return mixed
      */
     public function cookie(string $name, $default = null)
