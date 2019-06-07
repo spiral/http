@@ -20,6 +20,8 @@ use Spiral\Http\Exception\EmitterException;
 
 /**
  * Source code has been extracted from Zend/Diactoros.
+ *
+ * @codeCoverageIgnore
  */
 final class SapiEmitter implements EmitterInterface
 {
