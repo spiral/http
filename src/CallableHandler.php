@@ -73,7 +73,7 @@ final class CallableHandler implements RequestHandlerInterface
      * @param Response $response Initial pipeline response.
      * @param mixed    $result   Generated endpoint output.
      * @param string   $output   Buffer output.
-     *
+
      * @return Response
      */
     private function wrapResponse(Response $response, $result = null, string $output = ''): Response

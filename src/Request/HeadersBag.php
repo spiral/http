@@ -27,7 +27,7 @@ final class HeadersBag extends InputBag
      * Normalize header name.
      *
      * @param string $header
-     *
+
      * @return string
      */
     protected function normalize(string $header): string
@@ -44,7 +44,7 @@ final class HeadersBag extends InputBag
      *
      *
      * @param bool|string $implode Implode header lines, false to return header as array.
-     *
+
      * @return string|array
      */
     public function get(string $name, $default = null, $implode = ',')

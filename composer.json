@@ -12,6 +12,7 @@
   "require": {
     "php": "^7.1",
     "ext-json": "*",
+    "ext-mbstring": "*",
     "spiral/core": "^1.0",
     "spiral/files": "^2.0",
     "spiral/streams": "^1.0",
