@@ -1,7 +1,7 @@
 {
   "name": "spiral/http",
   "type": "library",
-  "description": "HTTP Core, Secure Cookies, CSRF protection, Middleware",
+  "description": "HTTP Request pipeline",
   "license": "MIT",
   "authors": [
     {
@@ -15,7 +15,6 @@
     "spiral/core": "^1.0",
     "spiral/files": "^2.0",
     "spiral/streams": "^1.0",
-    "spiral/encrypter": "^1.0",
     "psr/http-message": "^1.0",
     "psr/http-factory": "^1.0",
     "psr/http-server-middleware": "^1.0"

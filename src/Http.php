@@ -17,7 +17,7 @@ use Psr\Http\Server\RequestHandlerInterface;
 use Spiral\Http\Config\HttpConfig;
 use Spiral\Http\Exception\HttpException;
 
-final class HttpCore implements RequestHandlerInterface
+final class Http implements RequestHandlerInterface
 {
     /** @var HttpConfig */
     protected $config;
@@ -51,7 +51,7 @@ final class HttpCore implements RequestHandlerInterface
         $this->responseFactory = $responseFactory;
         $this->container = $container;
 
-        foreach ($this->config->baseMiddleware() as $middleware) {
+        foreach ($this->config->getMiddlewares() as $middleware) {
             $this->pipeline->pushMiddleware($this->container->get($middleware));
         }
     }
@@ -66,7 +66,7 @@ final class HttpCore implements RequestHandlerInterface
 
     /**
      * @param RequestHandlerInterface|callable $handler
-     * @return HttpCore
+     * @return Http
      */
     public function setHandler($handler): self
     {

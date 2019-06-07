@@ -21,7 +21,7 @@ class ConfigTest extends TestCase
             'basePath' => '/'
         ]);
 
-        $this->assertSame('/', $c->basePath());
+        $this->assertSame('/', $c->getBasePath());
     }
 
     public function testBaseHeaders()
@@ -32,7 +32,7 @@ class ConfigTest extends TestCase
             ]
         ]);
 
-        $this->assertSame(['key' => 'value'], $c->baseHeaders());
+        $this->assertSame(['key' => 'value'], $c->getBaseHeaders());
     }
 
     public function testBaseMiddleware()
@@ -41,7 +41,7 @@ class ConfigTest extends TestCase
             'middleware' => [CookiesMiddleware::class]
         ]);
 
-        $this->assertSame([CookiesMiddleware::class], $c->baseMiddleware());
+        $this->assertSame([CookiesMiddleware::class], $c->getMiddlewares());
     }
 
     public function testBaseMiddlewareFallback()
@@ -50,7 +50,7 @@ class ConfigTest extends TestCase
             'middlewares' => [CookiesMiddleware::class]
         ]);
 
-        $this->assertSame([CookiesMiddleware::class], $c->baseMiddleware());
+        $this->assertSame([CookiesMiddleware::class], $c->getMiddlewares());
     }
 
     public function testCsrf()
@@ -63,9 +63,9 @@ class ConfigTest extends TestCase
             ]
         ]);
 
-        $this->assertSame('csrf-token', $c->csrfCookie());
-        $this->assertSame(16, $c->csrfLength());
-        $this->assertSame(86400, $c->csrfLifetime());
+        $this->assertSame('csrf-token', $c->getCsrfCookie());
+        $this->assertSame(16, $c->getCsrfLength());
+        $this->assertSame(86400, $c->getCsrfLifetime());
         $this->assertSame(false, $c->csrfSecure());
 
         $c = new HttpConfig([
@@ -76,7 +76,7 @@ class ConfigTest extends TestCase
             ]
         ]);
 
-        $this->assertSame(null, $c->csrfLifetime());
+        $this->assertSame(null, $c->getCsrfLifetime());
         $this->assertSame(true, $c->csrfSecure());
     }
 

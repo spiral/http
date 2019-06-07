@@ -38,7 +38,7 @@ final class ResponseFactory implements ResponseFactoryInterface
         $response = new Response('php://memory', $code, []);
         $response = $response->withStatus($code, $reasonPhrase);
 
-        foreach ($this->config->baseHeaders() as $header => $value) {
+        foreach ($this->config->getBaseHeaders() as $header => $value) {
             $response = $response->withAddedHeader($header, $value);
         }
 

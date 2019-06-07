@@ -15,7 +15,6 @@ use Psr\Http\Message\StreamInterface;
 use Psr\Http\Message\UriInterface;
 use Spiral\Files\FilesInterface;
 use Spiral\Http\Exception\ResponseException;
-use Spiral\Http\Stream;
 use Spiral\Http\Traits\JsonTrait;
 use Spiral\Streams\StreamableInterface;
 
@@ -67,6 +66,7 @@ final class ResponseWrapper
 
     /**
      * Write json data into response.
+     *
      * @param     $data
      * @param int $code
      *

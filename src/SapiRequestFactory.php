@@ -68,7 +68,6 @@ final class SapiRequestFactory
         UriFactoryInterface $uriFactory,
         StreamFactoryInterface $streamFactory,
         UploadedFileFactoryInterface $uploadedFileFactory
-
     ) {
         $this->requestFactory = $requestFactory;
         $this->uriFactory = $uriFactory;
