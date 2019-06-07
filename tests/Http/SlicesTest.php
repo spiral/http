@@ -8,7 +8,6 @@
 
 namespace Spiral\Http\Tests;
 
-
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ServerRequestInterface;
 use Spiral\Core\Container;

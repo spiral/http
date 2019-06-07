@@ -7,7 +7,7 @@
  */
 declare(strict_types=1);
 
-namespace Spiral\Http\Diactoros;
+namespace Spiral\Http\Tests\Diactoros;
 
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ResponseInterface;

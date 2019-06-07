@@ -49,7 +49,7 @@ final class HttpConfig extends InjectableConfig
      *
      * @return array|Autowire[]
      */
-    public function getMiddlewares(): array
+    public function getMiddleware(): array
     {
         return $this->config['middleware'] ?? $this->config['middlewares'];
     }

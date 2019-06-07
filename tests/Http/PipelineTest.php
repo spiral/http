@@ -9,12 +9,11 @@
 namespace Spiral\Http\Tests;
 
 use PHPUnit\Framework\TestCase;
-use Psr\Http\Message\ResponseFactoryInterface;
-use Psr\Http\Message\ResponseInterface;
 use Spiral\Core\Container;
 use Spiral\Http\CallableHandler;
+use Spiral\Http\Config\HttpConfig;
 use Spiral\Http\Pipeline;
-use Zend\Diactoros\Response;
+use Spiral\Http\Tests\Diactoros\ResponseFactory;
 use Zend\Diactoros\ServerRequest;
 
 class PipelineTest extends TestCase
@@ -25,7 +24,7 @@ class PipelineTest extends TestCase
 
         $handler = new CallableHandler(function () {
             return "response";
-        }, new TestFactory());
+        }, new ResponseFactory(new HttpConfig(['headers' => []])));
 
         $response = $pipeline->withHandler($handler)->handle(new ServerRequest());
 
@@ -40,7 +39,7 @@ class PipelineTest extends TestCase
 
         $handler = new CallableHandler(function () {
             return "response";
-        }, new TestFactory());
+        }, new ResponseFactory(new HttpConfig(['headers' => []])));
 
         $response = $pipeline->process(new ServerRequest(), $handler);
 
@@ -56,13 +55,5 @@ class PipelineTest extends TestCase
     {
         $pipeline = new Pipeline(new Container());
         $pipeline->handle(new ServerRequest());
-    }
-}
-
-class TestFactory implements ResponseFactoryInterface
-{
-    public function createResponse(int $code = 200, string $reasonPhrase = ''): ResponseInterface
-    {
-        return (new Response('php://memory', $code, []))->withStatus($code, $reasonPhrase);
     }
 }

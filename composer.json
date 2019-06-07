@@ -29,5 +29,10 @@
     "psr-4": {
       "Spiral\\Http\\": "src/"
     }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Spiral\\Http\\Tests\\": "tests/Http/"
+    }
   }
 }

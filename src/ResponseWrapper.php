@@ -7,7 +7,7 @@
  */
 declare(strict_types=1);
 
-namespace Spiral\Http\Response;
+namespace Spiral\Http;
 
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ResponseInterface;
@@ -129,7 +129,7 @@ final class ResponseWrapper
     public function html(
         string $html,
         int $code = 200,
-        string $contentType = 'text/html; charset=UTF-8'
+        string $contentType = 'text/html; charset=utf-8'
     ): ResponseInterface {
         $response = $this->responseFactory->createResponse($code);
         $response->getBody()->write($html);

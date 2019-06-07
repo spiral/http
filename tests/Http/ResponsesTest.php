@@ -9,16 +9,14 @@
 namespace Spiral\Http\Tests;
 
 use PHPUnit\Framework\TestCase;
-use Psr\Http\Message\ResponseFactoryInterface;
-use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\StreamInterface;
 use Spiral\Files\Files;
-use Spiral\Http\Json\JsonEncoder;
-use Spiral\Http\Response\Response;
-use Spiral\Http\Response\ResponseWrapper;
-use Spiral\Http\Stream;
+use Spiral\Http\Config\HttpConfig;
+use Spiral\Http\ResponseWrapper;
+use Spiral\Http\Tests\Diactoros\ResponseFactory;
+use Spiral\Http\Tests\Diactoros\StreamFactory;
 use Spiral\Streams\StreamableInterface;
-
+use Zend\Diactoros\Stream;
 
 class ResponsesTest extends TestCase
 {
@@ -48,14 +46,15 @@ class ResponsesTest extends TestCase
             'message' => 'hi'
         ]);
 
-        $this->assertSame('{"status":300,"message":"hi"}', (string)$response->getBody()->getContents());
+        $this->assertSame('{"status":300,"message":"hi"}', (string)$response->getBody());
         $this->assertSame(300, $response->getStatusCode());
+        $this->assertSame('application/json', $response->getHeaderLine('Content-Type'));
     }
 
     public function testHtml()
     {
         $response = $this->getWrapper()->html('hello world');
-        $this->assertSame('hello world', (string)$response->getBody()->getContents());
+        $this->assertSame('hello world', (string)$response->getBody());
         $this->assertSame(200, $response->getStatusCode());
         $ff = $response->getHeader("Content-Type");
         $this->assertSame(["text/html; charset=utf-8"], $response->getHeader("Content-Type"));
@@ -123,17 +122,10 @@ class ResponsesTest extends TestCase
     protected function getWrapper(): ResponseWrapper
     {
         return new ResponseWrapper(
-            new WrapperResponseFactory(),
+            new ResponseFactory(new HttpConfig(['headers' => []])),
+            new StreamFactory(),
             new Files()
         );
-    }
-}
-
-class WrapperResponseFactory implements ResponseFactoryInterface
-{
-    public function createResponse(int $code = 200, string $reasonPhrase = ''): ResponseInterface
-    {
-        return (new Response('php://memory', $code, []))->withStatus($code, $reasonPhrase);
     }
 }
 

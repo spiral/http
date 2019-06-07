@@ -51,7 +51,7 @@ final class Http implements RequestHandlerInterface
         $this->responseFactory = $responseFactory;
         $this->container = $container;
 
-        foreach ($this->config->getMiddlewares() as $middleware) {
+        foreach ($this->config->getMiddleware() as $middleware) {
             $this->pipeline->pushMiddleware($this->container->get($middleware));
         }
     }

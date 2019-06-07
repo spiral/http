@@ -18,7 +18,7 @@ use Spiral\Http\CallableHandler;
 use Spiral\Http\Config\HttpConfig;
 use Spiral\Http\Http;
 use Spiral\Http\Pipeline;
-use Spiral\Http\ResponseFactory;
+use Spiral\Http\Tests\Diactoros\ResponseFactory;
 use Zend\Diactoros\ServerRequest;
 
 class HttpTest extends TestCase
@@ -73,7 +73,7 @@ class HttpTest extends TestCase
         $core = $this->getCore();
         $core->setHandler(new CallableHandler(function () {
             return "hello world";
-        }, new TestFactory()));
+        }, new ResponseFactory(new HttpConfig(['headers' => []]))));
 
         $response = $core->handle(new ServerRequest());
         $this->assertSame("hello world", (string)$response->getBody());
@@ -265,16 +265,6 @@ class HttpTest extends TestCase
                 'Content-Type' => 'text/html; charset=UTF-8'
             ],
             'middleware' => $middleware,
-            'cookies'    => [
-                'domain'   => '.%s',
-                'method'   => HttpConfig::COOKIE_ENCRYPT,
-                'excluded' => ['PHPSESSID', 'csrf-token']
-            ],
-            'csrf'       => [
-                'cookie'   => 'csrf-token',
-                'length'   => 16,
-                'lifetime' => 86400
-            ]
         ]);
 
         return new Http(

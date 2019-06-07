@@ -35,7 +35,7 @@ trait JsonTrait
             $code = $payload['status'];
         }
 
-        $response->getBody()->write($payload);
+        $response->getBody()->write(json_encode($payload));
 
         return $response->withStatus($code)->withHeader('Content-Type', 'application/json');
     }
