@@ -22,9 +22,10 @@ trait JsonTrait
      *
      * @param ResponseInterface $response
      * @param mixed             $payload
+     * @param int               $code
      * @return ResponseInterface
      */
-    private function writeJson(ResponseInterface $response, $payload): ResponseInterface
+    private function writeJson(ResponseInterface $response, $payload, int $code = 200): ResponseInterface
     {
         if ($payload instanceof JsonSerializable) {
             $payload = $payload->jsonSerialize();
@@ -32,11 +33,10 @@ trait JsonTrait
 
         if (is_array($payload) && isset($payload['status'])) {
             $code = $payload['status'];
-            $response = $response->withStatus($code);
         }
 
         $response->getBody()->write($payload);
 
-        return $response->withHeader('Content-Type', 'application/json');
+        return $response->withStatus($code)->withHeader('Content-Type', 'application/json');
     }
 }
