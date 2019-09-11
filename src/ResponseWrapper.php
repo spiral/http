@@ -51,6 +51,15 @@ final class ResponseWrapper
     }
 
     /**
+     * @param int $code
+     * @return ResponseInterface
+     */
+    public function create(int $code): ResponseInterface
+    {
+        return $this->responseFactory->createResponse($code);
+    }
+
+    /**
      * Mount redirect headers into response
      *
      * @param UriInterface|string $uri
