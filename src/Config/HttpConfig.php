@@ -15,6 +15,7 @@ use Spiral\Core\InjectableConfig;
 final class HttpConfig extends InjectableConfig
 {
     const CONFIG = 'http';
+    
     /**
      * @var array
      */
