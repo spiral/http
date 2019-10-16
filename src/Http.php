@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Spiral Framework.
  *
@@ -76,7 +77,7 @@ final class Http implements RequestHandlerInterface
             $this->handler = new CallableHandler($handler, $this->responseFactory);
         } else {
             throw new HttpException(
-                "Invalid handler is given, expects callable or RequestHandlerInterface."
+                'Invalid handler is given, expects callable or RequestHandlerInterface.'
             );
         }
 
@@ -92,7 +93,7 @@ final class Http implements RequestHandlerInterface
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
         if (empty($this->handler)) {
-            throw new HttpException("Unable to run HttpCore, no handler is set.");
+            throw new HttpException('Unable to run HttpCore, no handler is set.');
         }
 
         return $this->pipeline->withHandler($this->handler)->handle($request);

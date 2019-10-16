@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * Spiral Framework.
  *
@@ -34,6 +37,14 @@ class InputBag implements \Countable, \IteratorAggregate, \ArrayAccess
     }
 
     /**
+     * @return array
+     */
+    public function __debugInfo()
+    {
+        return $this->all();
+    }
+
+    /**
      * {@inheritdoc}
      */
     public function count(): int
@@ -51,37 +62,6 @@ class InputBag implements \Countable, \IteratorAggregate, \ArrayAccess
         } catch (DotNotFoundException $e) {
             return [];
         }
-    }
-
-    /**
-     * Get element using dot notation.
-     *
-     * @param string $name
-     * @return mixed|null
-     *
-     * @throws DotNotFoundException
-     */
-    private function dotGet(string $name)
-    {
-        $data = $this->data;
-
-        //Generating path relative to a given name and prefix
-        $path = (!empty($this->prefix) ? $this->prefix . '.' : '') . $name;
-        if (empty($path)) {
-            return $data;
-        }
-
-        $path = explode('.', rtrim($path, '.'));
-
-        foreach ($path as $step) {
-            if (!is_array($data) || !array_key_exists($step, $data)) {
-                throw new DotNotFoundException("Unable to find requested element '{$name}'");
-            }
-
-            $data = &$data[$step];
-        }
-
-        return $data;
     }
 
     /**
@@ -103,7 +83,8 @@ class InputBag implements \Countable, \IteratorAggregate, \ArrayAccess
      */
     public function fetch(array $keys, bool $fill = false, $filler = null)
     {
-        $result = array_intersect_key($this->all(), array_flip($keys));;
+        $result = array_intersect_key($this->all(), array_flip($keys));
+        ;
         if (!$fill) {
             return $result;
         }
@@ -165,9 +146,9 @@ class InputBag implements \Countable, \IteratorAggregate, \ArrayAccess
      *
      * @throws InputException
      */
-    public function offsetSet($offset, $value)
+    public function offsetSet($offset, $value): void
     {
-        throw new InputException("InputBag is immutable");
+        throw new InputException('InputBag is immutable');
     }
 
     /**
@@ -175,16 +156,39 @@ class InputBag implements \Countable, \IteratorAggregate, \ArrayAccess
      *
      * @throws InputException
      */
-    public function offsetUnset($offset)
+    public function offsetUnset($offset): void
     {
-        throw new InputException("InputBag is immutable");
+        throw new InputException('InputBag is immutable');
     }
 
     /**
-     * @return array
+     * Get element using dot notation.
+     *
+     * @param string $name
+     * @return mixed|null
+     *
+     * @throws DotNotFoundException
      */
-    public function __debugInfo()
+    private function dotGet(string $name)
     {
-        return $this->all();
+        $data = $this->data;
+
+        //Generating path relative to a given name and prefix
+        $path = (!empty($this->prefix) ? $this->prefix . '.' : '') . $name;
+        if (empty($path)) {
+            return $data;
+        }
+
+        $path = explode('.', rtrim($path, '.'));
+
+        foreach ($path as $step) {
+            if (!is_array($data) || !array_key_exists($step, $data)) {
+                throw new DotNotFoundException("Unable to find requested element '{$name}'");
+            }
+
+            $data = &$data[$step];
+        }
+
+        return $data;
     }
 }

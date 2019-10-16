@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Spiral Framework.
  *
@@ -14,8 +15,8 @@ use Spiral\Core\InjectableConfig;
 
 final class HttpConfig extends InjectableConfig
 {
-    const CONFIG = 'http';
-    
+    public const CONFIG = 'http';
+
     /**
      * @var array
      */

@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * Spiral Framework.
  *
@@ -26,13 +29,13 @@ class HeadersTest extends TestCase
      */
     private $input;
 
-    public function setUp()
+    public function setUp(): void
     {
         $this->container = new Container();
         $this->input = new InputManager($this->container);
     }
 
-    public function testShortcut()
+    public function testShortcut(): void
     {
         $request = new ServerRequest();
 
@@ -42,7 +45,7 @@ class HeadersTest extends TestCase
         $this->assertSame('value', $this->input->header('path'));
     }
 
-    public function testHas()
+    public function testHas(): void
     {
         $request = new ServerRequest();
 
@@ -53,7 +56,7 @@ class HeadersTest extends TestCase
         $this->assertTrue($this->input->headers->has('Path'));
     }
 
-    public function testFetch()
+    public function testFetch(): void
     {
         $request = new ServerRequest();
 
@@ -66,7 +69,7 @@ class HeadersTest extends TestCase
         ], $this->input->headers->fetch(['path']));
     }
 
-    public function testFetchNoImplode()
+    public function testFetchNoImplode(): void
     {
         $request = new ServerRequest();
 
@@ -76,7 +79,7 @@ class HeadersTest extends TestCase
 
         $this->assertSame([
             'Path' => ['value', 'value2']
-        ], $this->input->headers->fetch(['path'], false, true, false));
+        ], $this->input->headers->fetch(['path'], false, true, null));
 
         $this->assertSame(
             ['value', 'value2'],

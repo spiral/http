@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Spiral Framework.
  *
@@ -71,10 +72,10 @@ final class ResponseWrapper
     public function redirect($uri, int $code = 302): ResponseInterface
     {
         if (!is_string($uri) && !$uri instanceof UriInterface) {
-            throw new ResponseException("Redirect allowed only for string or UriInterface uris");
+            throw new ResponseException('Redirect allowed only for string or UriInterface uris');
         }
 
-        return $this->responseFactory->createResponse($code)->withHeader("Location", (string)$uri);
+        return $this->responseFactory->createResponse($code)->withHeader('Location', (string)$uri);
     }
 
     /**
@@ -108,7 +109,7 @@ final class ResponseWrapper
     ): ResponseInterface {
         if (empty($name)) {
             if (!is_string($filename)) {
-                throw new ResponseException("Unable to resolve public filename");
+                throw new ResponseException('Unable to resolve public filename');
             }
 
             $name = basename($filename);
@@ -167,7 +168,7 @@ final class ResponseWrapper
         }
 
         if (!$this->files->isFile($file)) {
-            throw new ResponseException("Unable to allocate response body stream, file does not exist");
+            throw new ResponseException('Unable to allocate response body stream, file does not exist');
         }
 
         return $this->streamFactory->createStreamFromFile($file);

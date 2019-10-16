@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Spiral Framework.
  *
@@ -21,22 +22,6 @@ final class HeadersBag extends InputBag
     public function has(string $name): bool
     {
         return parent::has($this->normalize($name));
-    }
-
-    /**
-     * Normalize header name.
-     *
-     * @param string $header
-
-     * @return string
-     */
-    protected function normalize(string $header): string
-    {
-        return str_replace(
-            ' ',
-            '-',
-            ucwords(str_replace('-', ' ', $header))
-        );
     }
 
     /**
@@ -77,5 +62,21 @@ final class HeadersBag extends InputBag
         }
 
         return $values;
+    }
+
+    /**
+     * Normalize header name.
+     *
+     * @param string $header
+
+     * @return string
+     */
+    protected function normalize(string $header): string
+    {
+        return str_replace(
+            ' ',
+            '-',
+            ucwords(str_replace('-', ' ', $header))
+        );
     }
 }

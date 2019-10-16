@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * Spiral Framework.
  *
@@ -30,7 +33,7 @@ class InputManagerTest extends TestCase
      */
     private $input;
 
-    public function setUp()
+    public function setUp(): void
     {
         $this->container = new Container();
         $this->input = new InputManager($this->container);
@@ -39,12 +42,12 @@ class InputManagerTest extends TestCase
     /**
      * @expectedException \Spiral\Core\Exception\ScopeException
      */
-    public function testCreateOutsideOfScope()
+    public function testCreateOutsideOfScope(): void
     {
         $this->input->request();
     }
 
-    public function testGetRequest()
+    public function testGetRequest(): void
     {
         $this->container->bind(ServerRequestInterface::class, new ServerRequest());
 
@@ -52,7 +55,7 @@ class InputManagerTest extends TestCase
         $this->assertSame($this->input->request(), $this->input->request());
     }
 
-    public function testChangeRequest()
+    public function testChangeRequest(): void
     {
         $this->container->bind(ServerRequestInterface::class, new ServerRequest([], [], '/hello'));
         $this->assertSame('/hello', $this->input->path());
@@ -61,7 +64,7 @@ class InputManagerTest extends TestCase
         $this->assertSame('/other', $this->input->path());
     }
 
-    public function testUri()
+    public function testUri(): void
     {
         $request = new ServerRequest([], [], 'http://domain.com/hello-world');
         $this->container->bind(ServerRequestInterface::class, $request);
@@ -85,7 +88,7 @@ class InputManagerTest extends TestCase
         $this->assertSame('/hello', $this->input->path());
     }
 
-    public function testMethod()
+    public function testMethod(): void
     {
         $request = new ServerRequest([], [], 'http://domain.com/hello-world', 'GET');
         $this->container->bind(ServerRequestInterface::class, $request);
@@ -104,7 +107,7 @@ class InputManagerTest extends TestCase
         $this->assertSame('PUT', $this->input->method());
     }
 
-    public function testIsSecure()
+    public function testIsSecure(): void
     {
         $request = new ServerRequest([], [], 'http://domain.com/hello-world', 'GET');
         $this->container->bind(ServerRequestInterface::class, $request);
@@ -117,7 +120,7 @@ class InputManagerTest extends TestCase
         $this->assertTrue($this->input->isSecure());
     }
 
-    public function testIsAjax()
+    public function testIsAjax(): void
     {
         $request = new ServerRequest(
             [],
@@ -148,7 +151,7 @@ class InputManagerTest extends TestCase
     }
 
 
-    public function testIsJsonExpected()
+    public function testIsJsonExpected(): void
     {
         $request = new ServerRequest(
             [],
@@ -178,7 +181,7 @@ class InputManagerTest extends TestCase
         $this->assertTrue($this->input->isJsonExpected());
     }
 
-    public function testRemoteIP()
+    public function testRemoteIP(): void
     {
         $request = new ServerRequest(
             [
@@ -214,7 +217,7 @@ class InputManagerTest extends TestCase
         $this->assertSame(null, $this->input->remoteAddress());
     }
 
-    public function testGetBag()
+    public function testGetBag(): void
     {
         $request = new ServerRequest(
             [
@@ -251,7 +254,7 @@ class InputManagerTest extends TestCase
     /**
      * @expectedException \Spiral\Http\Exception\InputException
      */
-    public function testWrongBad()
+    public function testWrongBad(): void
     {
         $request = new ServerRequest(
             [
@@ -269,7 +272,7 @@ class InputManagerTest extends TestCase
     }
 
 
-    public function testShortcuts()
+    public function testShortcuts(): void
     {
         $this->container->bind(ServerRequestInterface::class, (new ServerRequest())->withParsedBody([
             'array' => [

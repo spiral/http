@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Spiral Framework.
  *
@@ -105,6 +106,23 @@ final class InputManager implements SingletonInterface
     }
 
     /**
+     * @param string $name
+     * @return InputBag
+     */
+    public function __get(string $name): InputBag
+    {
+        return $this->bag($name);
+    }
+
+    /**
+     * Flushing bag instances when cloned.
+     */
+    public function __clone()
+    {
+        $this->bags = [];
+    }
+
+    /**
      * Creates new input slice associated with request sub-tree.
      *
      * @param string $prefix
@@ -166,7 +184,7 @@ final class InputManager implements SingletonInterface
             $request = $this->container->get(Request::class);
         } catch (ContainerExceptionInterface $e) {
             throw new ScopeException(
-                "Unable to get `ServerRequestInterface` in active container scope",
+                'Unable to get `ServerRequestInterface` in active container scope',
                 $e->getCode(),
                 $e
             );
@@ -210,8 +228,8 @@ final class InputManager implements SingletonInterface
     public function isAjax(): bool
     {
         return mb_strtolower(
-                $this->request()->getHeaderLine('X-Requested-With')
-            ) == 'xmlhttprequest';
+            $this->request()->getHeaderLine('X-Requested-With')
+        ) == 'xmlhttprequest';
     }
 
     /**
@@ -235,15 +253,6 @@ final class InputManager implements SingletonInterface
         $serverParams = $this->request()->getServerParams();
 
         return isset($serverParams['REMOTE_ADDR']) ? $serverParams['REMOTE_ADDR'] : null;
-    }
-
-    /**
-     * @param string $name
-     * @return InputBag
-     */
-    public function __get(string $name): InputBag
-    {
-        return $this->bag($name);
     }
 
     /**
@@ -335,7 +344,7 @@ final class InputManager implements SingletonInterface
     /**
      * @param string $name
      * @param mixed  $default
-     
+
      * @return mixed
      */
     public function cookie(string $name, $default = null)
@@ -374,13 +383,5 @@ final class InputManager implements SingletonInterface
     public function attribute(string $name, $default = null)
     {
         return $this->attributes->get($name, $default);
-    }
-
-    /**
-     * Flushing bag instances when cloned.
-     */
-    public function __clone()
-    {
-        $this->bags = [];
     }
 }

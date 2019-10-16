@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Spiral Framework.
  *
@@ -17,11 +18,11 @@ class ClientException extends HttpException
     /**
      * Most common codes.
      */
-    const BAD_DATA = 400;
-    const UNAUTHORIZED = 401;
-    const FORBIDDEN = 403;
-    const NOT_FOUND = 404;
-    const ERROR = 500;
+    public const BAD_DATA = 400;
+    public const UNAUTHORIZED = 401;
+    public const FORBIDDEN = 403;
+    public const NOT_FOUND = 404;
+    public const ERROR = 500;
 
     /**
      * Code and message positions are reverted.
@@ -29,7 +30,7 @@ class ClientException extends HttpException
      * @param int    $code
      * @param string $message
      */
-    public function __construct(?int $code = null, string $message = "")
+    public function __construct(?int $code = null, string $message = '')
     {
         if (empty($code) && empty($this->code)) {
             $code = self::BAD_DATA;

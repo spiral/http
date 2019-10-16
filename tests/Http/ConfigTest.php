@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * Spiral Framework.
  *
@@ -17,7 +20,7 @@ use Spiral\Http\Config\HttpConfig;
 
 class ConfigTest extends TestCase
 {
-    public function testBasePath()
+    public function testBasePath(): void
     {
         $c = new HttpConfig([
             'basePath' => '/'
@@ -26,7 +29,7 @@ class ConfigTest extends TestCase
         $this->assertSame('/', $c->getBasePath());
     }
 
-    public function testBaseHeaders()
+    public function testBaseHeaders(): void
     {
         $c = new HttpConfig([
             'headers' => [
@@ -37,7 +40,7 @@ class ConfigTest extends TestCase
         $this->assertSame(['key' => 'value'], $c->getBaseHeaders());
     }
 
-    public function testBaseMiddleware()
+    public function testBaseMiddleware(): void
     {
         $c = new HttpConfig([
             'middleware' => [TestMiddleware::class]
@@ -46,20 +49,12 @@ class ConfigTest extends TestCase
         $this->assertSame([TestMiddleware::class], $c->getMiddleware());
     }
 
-    public function testBaseMiddlewareFallback()
+    public function testBaseMiddlewareFallback(): void
     {
         $c = new HttpConfig([
             'middlewares' => [TestMiddleware::class]
         ]);
 
         $this->assertSame([TestMiddleware::class], $c->getMiddleware());
-    }
-}
-
-class TestMiddleware implements MiddlewareInterface
-{
-    public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
-    {
-        return $handler->handle($request);
     }
 }

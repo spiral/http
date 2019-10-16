@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Spiral Framework.
  *
@@ -12,5 +13,4 @@ namespace Spiral\Http\Exception;
 // todo: license to zend
 class EmitterException extends \RuntimeException
 {
-
 }

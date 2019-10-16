@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * Spiral Framework.
  *
@@ -18,37 +21,37 @@ use Spiral\Http\Exception\ClientException\UnauthorizedException;
 
 class ExceptionsTest extends TestCase
 {
-    public function testClientException()
+    public function testClientException(): void
     {
         $e = new ClientException();
         $this->assertSame(400, $e->getCode());
     }
 
-    public function testNotFound()
+    public function testNotFound(): void
     {
         $e = new NotFoundException();
         $this->assertSame(404, $e->getCode());
     }
 
-    public function testBadRequest()
+    public function testBadRequest(): void
     {
         $e = new BadRequestException();
         $this->assertSame(400, $e->getCode());
     }
 
-    public function testForbidden()
+    public function testForbidden(): void
     {
         $e = new ForbiddenException();
         $this->assertSame(403, $e->getCode());
     }
 
-    public function testUnauthorized()
+    public function testUnauthorized(): void
     {
         $e = new UnauthorizedException();
         $this->assertSame(401, $e->getCode());
     }
 
-    public function testServerError()
+    public function testServerError(): void
     {
         $e = new ServerErrorException();
         $this->assertSame(500, $e->getCode());

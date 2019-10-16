@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Spiral Framework.
  *
@@ -14,5 +15,4 @@ namespace Spiral\Http\Exception;
  */
 class ResponseException extends HttpException
 {
-
 }

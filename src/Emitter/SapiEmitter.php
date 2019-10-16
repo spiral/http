@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Spiral Framework.
  *
@@ -64,14 +65,14 @@ final class SapiEmitter implements EmitterInterface
      * @throws EmitterException if headers have already been sent.
      * @throws EmitterException if output is present in the output buffer.
      */
-    private function assertNoPreviousOutput()
+    private function assertNoPreviousOutput(): void
     {
         if (headers_sent()) {
-            throw new EmitterException("Unable to emit response, headers already send.");
+            throw new EmitterException('Unable to emit response, headers already send.');
         }
 
         if (ob_get_level() > 0 && ob_get_length() > 0) {
-            throw new EmitterException("Unable to emit response, found non closed buffered output.");
+            throw new EmitterException('Unable to emit response, found non closed buffered output.');
         }
     }
 

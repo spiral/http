@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * Spiral Framework.
  *
@@ -26,13 +29,13 @@ class SlicesTest extends TestCase
      */
     private $input;
 
-    public function setUp()
+    public function setUp(): void
     {
         $this->container = new Container();
         $this->input = new InputManager($this->container);
     }
 
-    public function testNoSlice()
+    public function testNoSlice(): void
     {
         $this->container->bind(ServerRequestInterface::class, (new ServerRequest())->withParsedBody([
             'array' => [
@@ -47,7 +50,7 @@ class SlicesTest extends TestCase
         ], $this->input->data->all());
     }
 
-    public function testSlice()
+    public function testSlice(): void
     {
         $this->container->bind(ServerRequestInterface::class, (new ServerRequest())->withParsedBody([
             'array' => [
@@ -60,7 +63,7 @@ class SlicesTest extends TestCase
         ], $this->input->withPrefix('array')->data->all());
     }
 
-    public function testDeadEnd()
+    public function testDeadEnd(): void
     {
         $this->container->bind(ServerRequestInterface::class, (new ServerRequest())->withParsedBody([
             'array' => [
@@ -71,7 +74,7 @@ class SlicesTest extends TestCase
         $this->assertSame([], $this->input->withPrefix('other')->data->all());
     }
 
-    public function testMultiple()
+    public function testMultiple(): void
     {
         $this->container->bind(ServerRequestInterface::class, (new ServerRequest())->withParsedBody([
             'array' => [

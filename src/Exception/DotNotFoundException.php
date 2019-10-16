@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Spiral Framework.
  *
@@ -7,7 +8,6 @@
  */
 declare(strict_types=1);
 
-
 namespace Spiral\Http\Exception;
 
 /**
@@ -15,5 +15,4 @@ namespace Spiral\Http\Exception;
  */
 class DotNotFoundException extends \RuntimeException
 {
-
 }

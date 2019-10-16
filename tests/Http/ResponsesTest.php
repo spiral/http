@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * Spiral Framework.
  *
@@ -20,7 +23,7 @@ use Zend\Diactoros\Stream;
 
 class ResponsesTest extends TestCase
 {
-    public function testRedirect()
+    public function testRedirect(): void
     {
         $response = $this->getWrapper()->redirect('google.com');
         $this->assertSame('google.com', $response->getHeaderLine('Location'));
@@ -34,12 +37,12 @@ class ResponsesTest extends TestCase
     /**
      * @expectedException \Spiral\Http\Exception\ResponseException
      */
-    public function testRedirectException()
+    public function testRedirectException(): void
     {
         $this->getWrapper()->redirect(true);
     }
 
-    public function testJson()
+    public function testJson(): void
     {
         $response = $this->getWrapper()->json([
             'status'  => 300,
@@ -51,16 +54,16 @@ class ResponsesTest extends TestCase
         $this->assertSame('application/json', $response->getHeaderLine('Content-Type'));
     }
 
-    public function testHtml()
+    public function testHtml(): void
     {
         $response = $this->getWrapper()->html('hello world');
         $this->assertSame('hello world', (string)$response->getBody());
         $this->assertSame(200, $response->getStatusCode());
-        $ff = $response->getHeader("Content-Type");
-        $this->assertSame(["text/html; charset=utf-8"], $response->getHeader("Content-Type"));
+        $ff = $response->getHeader('Content-Type');
+        $this->assertSame(['text/html; charset=utf-8'], $response->getHeader('Content-Type'));
     }
 
-    public function testAttachment()
+    public function testAttachment(): void
     {
         $response = $this->getWrapper()->attachment(__FILE__);
 
@@ -70,7 +73,7 @@ class ResponsesTest extends TestCase
         $this->assertSame('application/octet-stream', (string)$response->getHeaderLine('Content-Type'));
     }
 
-    public function testAttachmentResource()
+    public function testAttachmentResource(): void
     {
         $response = $this->getWrapper()->attachment(fopen(__FILE__, 'r'), 'file.php');
 
@@ -80,7 +83,7 @@ class ResponsesTest extends TestCase
         $this->assertSame('application/octet-stream', (string)$response->getHeaderLine('Content-Type'));
     }
 
-    public function testAttachmentStream()
+    public function testAttachmentStream(): void
     {
         $response = $this->getWrapper()->attachment(new Stream(fopen(__FILE__, 'r'), 'r'), 'file.php');
 
@@ -90,7 +93,7 @@ class ResponsesTest extends TestCase
         $this->assertSame('application/octet-stream', (string)$response->getHeaderLine('Content-Type'));
     }
 
-    public function testAttachmentStreamable()
+    public function testAttachmentStreamable(): void
     {
         $response = $this->getWrapper()->attachment(
             new Streamable(new Stream(fopen(__FILE__, 'r'), 'r')),
@@ -106,7 +109,7 @@ class ResponsesTest extends TestCase
     /**
      * @expectedException \Spiral\Http\Exception\ResponseException
      */
-    public function testAttachmentStreamNoName()
+    public function testAttachmentStreamNoName(): void
     {
         $response = $this->getWrapper()->attachment(new Stream(fopen(__FILE__, 'r'), 'r'));
     }
@@ -114,7 +117,7 @@ class ResponsesTest extends TestCase
     /**
      * @expectedException \Spiral\Http\Exception\ResponseException
      */
-    public function testAttachmentException()
+    public function testAttachmentException(): void
     {
         $response = $this->getWrapper()->attachment('invalid');
     }
@@ -126,23 +129,5 @@ class ResponsesTest extends TestCase
             new StreamFactory(),
             new Files()
         );
-    }
-}
-
-class Streamable implements StreamableInterface
-{
-    private $stream;
-
-    public function __construct(StreamInterface $stream)
-    {
-        $this->stream = $stream;
-    }
-
-    /**
-     * @return StreamInterface
-     */
-    public function getStream(): StreamInterface
-    {
-        return $this->stream;
     }
 }

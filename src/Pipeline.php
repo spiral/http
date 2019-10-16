@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Spiral Framework.
  *
@@ -72,7 +73,7 @@ final class Pipeline implements RequestHandlerInterface, MiddlewareInterface
     public function handle(Request $request): Response
     {
         if (empty($this->handler)) {
-            throw new PipelineException("Unable to run pipeline, no handler given.");
+            throw new PipelineException('Unable to run pipeline, no handler given.');
         }
 
         $position = $this->position++;

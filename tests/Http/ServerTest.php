@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * Spiral Framework.
  *
@@ -26,13 +29,13 @@ class ServerTest extends TestCase
      */
     private $input;
 
-    public function setUp()
+    public function setUp(): void
     {
         $this->container = new Container();
         $this->input = new InputManager($this->container);
     }
 
-    public function testShortcut()
+    public function testShortcut(): void
     {
         $request = new ServerRequest(
             ['PATH' => 'sample']
@@ -43,7 +46,7 @@ class ServerTest extends TestCase
         $this->assertSame('sample', $this->input->server('path'));
     }
 
-    public function testHas()
+    public function testHas(): void
     {
         $request = new ServerRequest(
             ['PATH' => 'sample']
@@ -56,7 +59,7 @@ class ServerTest extends TestCase
         $this->assertTrue($this->input->server->has('path'));
     }
 
-    public function testGet()
+    public function testGet(): void
     {
         $request = new ServerRequest(
             ['PATH' => 'sample']
@@ -68,7 +71,7 @@ class ServerTest extends TestCase
         $this->assertSame(null, $this->input->server->get('other'));
     }
 
-    public function testGetDot()
+    public function testGetDot(): void
     {
         $request = new ServerRequest(
             ['PATH' => ['SAMPLE' => 1]]
@@ -80,7 +83,7 @@ class ServerTest extends TestCase
         $this->assertSame(null, $this->input->server->get('path.another'));
     }
 
-    public function testAll()
+    public function testAll(): void
     {
         $request = new ServerRequest(
             ['PATH' => 'sample']
@@ -93,7 +96,7 @@ class ServerTest extends TestCase
         ], $this->input->server->all());
     }
 
-    public function testServerBagFetchNoFill()
+    public function testServerBagFetchNoFill(): void
     {
         $request = new ServerRequest(
             ['PATH' => 'sample']
@@ -110,7 +113,7 @@ class ServerTest extends TestCase
         ], $this->input->server->fetch(['path']));
     }
 
-    public function testServerBagFetchAndFill()
+    public function testServerBagFetchAndFill(): void
     {
         $request = new ServerRequest(
             ['PATH' => 'sample']
@@ -128,7 +131,7 @@ class ServerTest extends TestCase
         );
     }
 
-    public function testServerBagCount()
+    public function testServerBagCount(): void
     {
         $request = new ServerRequest(
             ['PATH' => 'sample']
@@ -139,7 +142,7 @@ class ServerTest extends TestCase
         $this->assertSame(1, $this->input->server->count());
     }
 
-    public function testServerBagArrayAccess()
+    public function testServerBagArrayAccess(): void
     {
         $request = new ServerRequest(
             ['PATH' => 'sample']
@@ -151,7 +154,7 @@ class ServerTest extends TestCase
         $this->assertFalse(isset($this->input->server['other']));
     }
 
-    public function testDebugInfo()
+    public function testDebugInfo(): void
     {
         $request = new ServerRequest(
             ['PATH' => 'sample']
@@ -165,7 +168,7 @@ class ServerTest extends TestCase
         );
     }
 
-    public function testIterator()
+    public function testIterator(): void
     {
         $request = new ServerRequest(
             ['PATH' => 'sample']
@@ -182,7 +185,7 @@ class ServerTest extends TestCase
     /**
      * @expectedException \Spiral\Http\Exception\InputException
      */
-    public function testSetAndExceptions()
+    public function testSetAndExceptions(): void
     {
         $request = new ServerRequest(
             ['PATH' => 'sample']
@@ -195,7 +198,7 @@ class ServerTest extends TestCase
     /**
      * @expectedException \Spiral\Http\Exception\InputException
      */
-    public function testUnsetAndExceptions()
+    public function testUnsetAndExceptions(): void
     {
         $request = new ServerRequest(
             ['PATH' => 'sample']

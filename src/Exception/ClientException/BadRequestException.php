@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Spiral Framework.
  *
@@ -6,7 +7,6 @@
  * @author    Anton Titov (Wolfy-J)
  */
 declare(strict_types=1);
-
 
 namespace Spiral\Http\Exception\ClientException;
 
@@ -23,7 +23,7 @@ class BadRequestException extends ClientException
     /**
      * @param string $message
      */
-    public function __construct(string $message = "")
+    public function __construct(string $message = '')
     {
         parent::__construct($this->code, $message);
     }

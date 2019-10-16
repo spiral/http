@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * Spiral Framework.
  *
@@ -18,12 +21,12 @@ use Zend\Diactoros\ServerRequest;
 
 class PipelineTest extends TestCase
 {
-    public function testTarget()
+    public function testTarget(): void
     {
         $pipeline = new Pipeline(new Container());
 
         $handler = new CallableHandler(function () {
-            return "response";
+            return 'response';
         }, new ResponseFactory(new HttpConfig(['headers' => []])));
 
         $response = $pipeline->withHandler($handler)->handle(new ServerRequest());
@@ -33,12 +36,12 @@ class PipelineTest extends TestCase
         $this->assertSame('response', (string)$response->getBody());
     }
 
-    public function testHandle()
+    public function testHandle(): void
     {
         $pipeline = new Pipeline(new Container());
 
         $handler = new CallableHandler(function () {
-            return "response";
+            return 'response';
         }, new ResponseFactory(new HttpConfig(['headers' => []])));
 
         $response = $pipeline->process(new ServerRequest(), $handler);
@@ -51,7 +54,7 @@ class PipelineTest extends TestCase
     /**
      * @expectedException \Spiral\Http\Exception\PipelineException
      */
-    public function testHandleException()
+    public function testHandleException(): void
     {
         $pipeline = new Pipeline(new Container());
         $pipeline->handle(new ServerRequest());

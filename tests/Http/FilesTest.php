@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * Spiral Framework.
  *
@@ -28,13 +31,13 @@ class FilesTest extends TestCase
      */
     private $input;
 
-    public function setUp()
+    public function setUp(): void
     {
         $this->container = new Container();
         $this->input = new InputManager($this->container);
     }
 
-    public function testShortcut()
+    public function testShortcut(): void
     {
         $request = new ServerRequest();
         $request = $request->withUploadedFiles([
@@ -52,7 +55,7 @@ class FilesTest extends TestCase
         $this->assertSame(null, $this->input->file('other'));
     }
 
-    public function testGetFilename()
+    public function testGetFilename(): void
     {
         $request = new ServerRequest();
         $request = $request->withUploadedFiles([
@@ -74,7 +77,7 @@ class FilesTest extends TestCase
     }
 
 
-    public function testGetFilenameMissing()
+    public function testGetFilenameMissing(): void
     {
         $request = new ServerRequest();
         $request = $request->withUploadedFiles([
