@@ -28,10 +28,11 @@ class ClientException extends HttpException
     /**
      * Code and message positions are reverted.
      *
-     * @param int    $code
+     * @param int $code
      * @param string $message
+     * @param \Throwable|null $previous
      */
-    public function __construct(?int $code = null, string $message = '')
+    public function __construct(?int $code = null, string $message = '', ?\Throwable $previous = null)
     {
         if (empty($code) && empty($this->code)) {
             $code = self::BAD_DATA;
@@ -41,6 +42,6 @@ class ClientException extends HttpException
             $message = "Http Error - {$code}";
         }
 
-        parent::__construct($message, $code);
+        parent::__construct($message, $code, $previous);
     }
 }
