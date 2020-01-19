@@ -106,6 +106,13 @@ class ResponsesTest extends TestCase
         $this->assertSame('application/octet-stream', (string)$response->getHeaderLine('Content-Type'));
     }
 
+    public function testCreate()
+    {
+        $response = $this->getWrapper()->create(400);
+
+        $this->assertEquals(400, $response->getStatusCode());
+    }
+
     /**
      * @expectedException \Spiral\Http\Exception\ResponseException
      */

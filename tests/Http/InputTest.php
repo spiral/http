@@ -173,6 +173,20 @@ class InputManagerTest extends TestCase
             'GET',
             'php://input',
             [
+                'Accept' => 'text/html'
+            ]
+        );
+        $this->container->bind(ServerRequestInterface::class, $request);
+
+        $this->assertFalse($this->input->isJsonExpected());
+
+        $request = new ServerRequest(
+            [],
+            [],
+            'http://domain.com/hello-world',
+            'GET',
+            'php://input',
+            [
                 'Accept' => 'application/json'
             ]
         );
