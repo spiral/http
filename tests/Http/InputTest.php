@@ -153,6 +153,8 @@ class InputManagerTest extends TestCase
 
     public function testIsJsonExpected(): void
     {
+        $this->input->addJsonType('application/vnd.api+json');
+
         $request = new ServerRequest(
             [],
             [],
@@ -188,6 +190,20 @@ class InputManagerTest extends TestCase
             'php://input',
             [
                 'Accept' => 'application/json'
+            ]
+        );
+        $this->container->bind(ServerRequestInterface::class, $request);
+
+        $this->assertTrue($this->input->isJsonExpected());
+
+        $request = new ServerRequest(
+            [],
+            [],
+            'http://domain.com/hello-world',
+            'GET',
+            'php://input',
+            [
+                'Accept' => 'application/vnd.api+json'
             ]
         );
         $this->container->bind(ServerRequestInterface::class, $request);
