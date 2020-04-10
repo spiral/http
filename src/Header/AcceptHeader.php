@@ -29,23 +29,6 @@ final class AcceptHeader
     private $sorted = true;
 
     /**
-     * @param string $raw
-     * @return AcceptHeader
-     */
-    public static function fromString(string $raw): self
-    {
-        $header = new static();
-        $header->sorted = false;
-
-        $parts = explode(',', $raw);
-        foreach ($parts as $part) {
-            $header->addItem(trim($part));
-        }
-
-        return $header;
-    }
-
-    /**
      * AcceptHeader constructor.
      * @param array|AcceptHeaderItem[]|string[] $items
      */
@@ -62,6 +45,23 @@ final class AcceptHeader
     public function __toString(): string
     {
         return implode(', ', $this->sorted());
+    }
+
+    /**
+     * @param string $raw
+     * @return AcceptHeader
+     */
+    public static function fromString(string $raw): self
+    {
+        $header = new static();
+        $header->sorted = false;
+
+        $parts = explode(',', $raw);
+        foreach ($parts as $part) {
+            $header->addItem(trim($part));
+        }
+
+        return $header;
     }
 
     /**
@@ -129,7 +129,7 @@ final class AcceptHeader
      *
      * @param AcceptHeaderItem|string $item
      */
-    private function addItem($item)
+    private function addItem($item): void
     {
         $this->items[] = $item instanceof AcceptHeaderItem ? $item : AcceptHeaderItem::fromString((string) $item);
         $this->sorted = false;
@@ -138,7 +138,7 @@ final class AcceptHeader
     /**
      * Sort header items by weight.
      */
-    private function sort()
+    private function sort(): void
     {
         if (!$this->sorted) {
             /**

@@ -14,6 +14,8 @@ namespace Spiral\Http\Tests\Request;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ServerRequestInterface;
 use Spiral\Core\Container;
+use Spiral\Core\Exception\ScopeException;
+use Spiral\Http\Exception\InputException;
 use Spiral\Http\Request\FilesBag;
 use Spiral\Http\Request\HeadersBag;
 use Spiral\Http\Request\InputBag;
@@ -39,11 +41,9 @@ class InputManagerTest extends TestCase
         $this->input = new InputManager($this->container);
     }
 
-    /**
-     * @expectedException \Spiral\Core\Exception\ScopeException
-     */
     public function testCreateOutsideOfScope(): void
     {
+        $this->expectException(ScopeException::class);
         $this->input->request();
     }
 
@@ -128,8 +128,7 @@ class InputManagerTest extends TestCase
             'http://domain.com/hello-world',
             'GET',
             'php://input',
-            [
-            ]
+            []
         );
         $this->container->bind(ServerRequestInterface::class, $request);
 
@@ -141,19 +140,21 @@ class InputManagerTest extends TestCase
             'http://domain.com/hello-world',
             'GET',
             'php://input',
-            [
-                'X-Requested-With' => 'xmlhttprequest'
-            ]
+            ['X-Requested-With' => 'xmlhttprequest']
         );
         $this->container->bind(ServerRequestInterface::class, $request);
 
         $this->assertTrue($this->input->isAjax());
     }
 
-
-    public function testIsJsonExpected(): void
+    /**
+     * @dataProvider isJsonExpectedProvider
+     * @param bool        $expected
+     * @param string|null $acceptHeader
+     */
+    public function testIsJsonExpected(bool $expected, ?string $acceptHeader): void
     {
-        $this->input->addJsonType('application/vnd.api+json');
+        $input = $this->input->withJsonType('application/vnd.api+json');
 
         $request = new ServerRequest(
             [],
@@ -161,103 +162,61 @@ class InputManagerTest extends TestCase
             'http://domain.com/hello-world',
             'GET',
             'php://input',
-            [
-            ]
+            $acceptHeader !== null ? ['Accept' => $acceptHeader] : []
         );
         $this->container->bind(ServerRequestInterface::class, $request);
 
-        $this->assertFalse($this->input->isJsonExpected());
+        $this->assertSame($expected, $input->isJsonExpected());
+    }
 
-        $request = new ServerRequest(
-            [],
-            [],
-            'http://domain.com/hello-world',
-            'GET',
-            'php://input',
-            [
-                'Accept' => 'text/html'
-            ]
-        );
-        $this->container->bind(ServerRequestInterface::class, $request);
-
-        $this->assertFalse($this->input->isJsonExpected());
-
-        $request = new ServerRequest(
-            [],
-            [],
-            'http://domain.com/hello-world',
-            'GET',
-            'php://input',
-            [
-                'Accept' => 'application/json'
-            ]
-        );
-        $this->container->bind(ServerRequestInterface::class, $request);
-
-        $this->assertTrue($this->input->isJsonExpected());
-
-        $request = new ServerRequest(
-            [],
-            [],
-            'http://domain.com/hello-world',
-            'GET',
-            'php://input',
-            [
-                'Accept' => 'application/vnd.api+json'
-            ]
-        );
-        $this->container->bind(ServerRequestInterface::class, $request);
-
-        $this->assertTrue($this->input->isJsonExpected());
+    public function isJsonExpectedProvider(): iterable
+    {
+        return [
+            [false, null],
+            [false, 'text/html'],
+            [true, 'application/json'],
+            [true, 'application/vnd.api+json'],
+        ];
     }
 
     public function testRemoteIP(): void
     {
         $request = new ServerRequest(
-            [
-                'REMOTE_ADDR' => '127.0.0.1'
-            ],
+            ['REMOTE_ADDR' => '127.0.0.1'],
             [],
             'http://domain.com/hello-world',
             'GET',
             'php://input',
-            [
-            ]
+            []
         );
         $this->container->bind(ServerRequestInterface::class, $request);
 
         $this->assertSame('127.0.0.1', $this->input->remoteAddress());
 
         $request = new ServerRequest(
-            [
-                'REMOTE_ADDR' => null
-            ],
+            ['REMOTE_ADDR' => null],
             [],
             'http://domain.com/hello-world',
             'GET',
             'php://input',
-            [
-                'Accept' => 'application/json'
-            ]
+            ['Accept' => 'application/json']
         );
         $this->container->bind(ServerRequestInterface::class, $request);
 
         $this->assertTrue($this->input->isJsonExpected());
 
-        $this->assertSame(null, $this->input->remoteAddress());
+        $this->assertNull($this->input->remoteAddress());
     }
 
     public function testGetBag(): void
     {
         $request = new ServerRequest(
-            [
-            ],
+            [],
             [],
             'http://domain.com/hello-world',
             'GET',
             'php://input',
-            [
-            ]
+            []
         );
         $this->container->bind(ServerRequestInterface::class, $request);
 
@@ -281,26 +240,21 @@ class InputManagerTest extends TestCase
         $this->assertInstanceOf(ServerBag::class, $input->server);
     }
 
-    /**
-     * @expectedException \Spiral\Http\Exception\InputException
-     */
     public function testWrongBad(): void
     {
+        $this->expectException(InputException::class);
         $request = new ServerRequest(
-            [
-            ],
+            [],
             [],
             'http://domain.com/hello-world',
             'GET',
             'php://input',
-            [
-            ]
+            []
         );
 
         $this->container->bind(ServerRequestInterface::class, $request);
         $this->input->invalid;
     }
-
 
     public function testShortcuts(): void
     {

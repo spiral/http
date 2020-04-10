@@ -28,6 +28,37 @@ final class AcceptHeaderItem
     private $params;
 
     /**
+     * AcceptHeaderItem constructor.
+     * @param string $mime
+     * @param float $quality
+     * @param array $params
+     */
+    public function __construct(string $mime, float $quality = 1.0, array $params = [])
+    {
+        $this->value = $mime;
+        $this->quality = $quality;
+        $this->params = $params;
+    }
+
+    /**
+     * @return string
+     */
+    public function __toString(): string
+    {
+        $parts = [$this->getValue()];
+
+        if ($this->quality < 1) {
+            $parts[] = "q=$this->quality";
+        }
+
+        foreach ($this->getParams() as $name => $value) {
+            $parts[] = "$name=$value";
+        }
+
+        return implode('; ', $parts);
+    }
+
+    /**
      * Parse accept header string.
      *
      * @param string $string
@@ -89,74 +120,6 @@ final class AcceptHeaderItem
         return ($a->getQuality() > $b->getQuality()) ? 1 : -1;
     }
 
-
-    /**
-     * Compare to header item values. More specific types ( with no "*" ) has more value.
-     * Return 1 if first value preferable or -1 if second, 0 in case of same weight.
-     *
-     * @param string $a
-     * @param string $b
-     * @return int
-     */
-    private static function compareValue(string $a, string $b): int
-    {
-        // Check "Accept" headers values with it is type and subtype.
-        if (strpos($a, '/') !== false && strpos($b, '/') !== false) {
-            [$typeA, $subtypeA] = explode('/', $a, 2);
-            [$typeB, $subtypeB] = explode('/', $b, 2);
-
-            if ($typeA === $typeB) {
-                return static::compareAsterisk($subtypeA, $subtypeB);
-            }
-
-            return static::compareAsterisk($typeA, $typeB);
-        }
-
-        return static::compareAsterisk($a, $b);
-    }
-
-    /**
-     * @param string $a
-     * @param string $b
-     * @return int
-     */
-    private static function compareAsterisk(string $a, string $b)
-    {
-        return $b === '*' && $a !== '*' ? 1
-            : ($b !== '*' && $a === '*' ? -1 : 0);
-    }
-
-    /**
-     * AcceptHeaderItem constructor.
-     * @param string $mime
-     * @param float $quality
-     * @param array $params
-     */
-    public function __construct(string $mime, float $quality = 1.0, array $params = [])
-    {
-        $this->value = $mime;
-        $this->quality = $quality;
-        $this->params = $params;
-    }
-
-    /**
-     * @return string
-     */
-    public function __toString(): string
-    {
-        $parts = [$this->getValue()];
-
-        if ($this->quality < 1) {
-            $parts[] = "q=$this->quality";
-        }
-
-        foreach ($this->getParams() as $name => $value) {
-            $parts[] = "$name=$value";
-        }
-
-        return implode('; ', $parts);
-    }
-
     /**
      * @param string $value
      * @return $this
@@ -215,5 +178,42 @@ final class AcceptHeaderItem
         $item->params = $params;
 
         return $item;
+    }
+
+
+    /**
+     * Compare to header item values. More specific types ( with no "*" ) has more value.
+     * Return 1 if first value preferable or -1 if second, 0 in case of same weight.
+     *
+     * @param string $a
+     * @param string $b
+     * @return int
+     */
+    private static function compareValue(string $a, string $b): int
+    {
+        // Check "Accept" headers values with it is type and subtype.
+        if (strpos($a, '/') !== false && strpos($b, '/') !== false) {
+            [$typeA, $subtypeA] = explode('/', $a, 2);
+            [$typeB, $subtypeB] = explode('/', $b, 2);
+
+            if ($typeA === $typeB) {
+                return static::compareAsterisk($subtypeA, $subtypeB);
+            }
+
+            return static::compareAsterisk($typeA, $typeB);
+        }
+
+        return static::compareAsterisk($a, $b);
+    }
+
+    /**
+     * @param string $a
+     * @param string $b
+     * @return int
+     */
+    private static function compareAsterisk(string $a, string $b)
+    {
+        return $b === '*' && $a !== '*' ? 1
+            : ($b !== '*' && $a === '*' ? -1 : 0);
     }
 }

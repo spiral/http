@@ -80,13 +80,13 @@ final class InputManager implements SingletonInterface
      * @invisible
      * @var Request
      */
-    protected $request = null;
+    protected $request;
 
     /**
      * @invisible
      * @var ContainerInterface
      */
-    protected $container = null;
+    protected $container;
 
     /** @var InputBag[] */
     private $bags = [];
@@ -164,7 +164,9 @@ final class InputManager implements SingletonInterface
 
         if (empty($path)) {
             return '/';
-        } elseif ($path[0] !== '/') {
+        }
+
+        if ($path[0] !== '/') {
             return '/' . $path;
         }
 
@@ -227,7 +229,7 @@ final class InputManager implements SingletonInterface
     public function isSecure(): bool
     {
         //Double check though attributes?
-        return $this->request()->getUri()->getScheme() == 'https';
+        return $this->request()->getUri()->getScheme() === 'https';
     }
 
     /**
@@ -239,7 +241,7 @@ final class InputManager implements SingletonInterface
     {
         return mb_strtolower(
             $this->request()->getHeaderLine('X-Requested-With')
-        ) == 'xmlhttprequest';
+        ) === 'xmlhttprequest';
     }
 
     /**
@@ -265,11 +267,12 @@ final class InputManager implements SingletonInterface
      * @param string $type
      * @return $this
      */
-    public function addJsonType(string $type): self
+    public function withJsonType(string $type): self
     {
-        $this->jsonTypes[] = $type;
+        $input = clone $this;
+        $input->jsonTypes[] = $type;
 
-        return $this;
+        return $input;
     }
 
     /**
@@ -282,7 +285,7 @@ final class InputManager implements SingletonInterface
     {
         $serverParams = $this->request()->getServerParams();
 
-        return isset($serverParams['REMOTE_ADDR']) ? $serverParams['REMOTE_ADDR'] : null;
+        return $serverParams['REMOTE_ADDR'] ?? null;
     }
 
     /**
@@ -388,7 +391,7 @@ final class InputManager implements SingletonInterface
      *
      * @return UploadedFileInterface|null
      */
-    public function file(string $name, $default = null)
+    public function file(string $name, $default = null): ?UploadedFileInterface
     {
         return $this->files->get($name, $default);
     }
