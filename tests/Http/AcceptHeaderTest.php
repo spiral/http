@@ -12,152 +12,197 @@ declare(strict_types=1);
 namespace Spiral\Http\Tests;
 
 use PHPUnit\Framework\TestCase;
+use Spiral\Http\Exception\AcceptHeaderException;
 use Spiral\Http\Header\AcceptHeader;
 use Spiral\Http\Header\AcceptHeaderItem;
 
 class AcceptHeaderTest extends TestCase
 {
-    public function testHeaderItemCompare(): void
+    public function testEmpty(): void
     {
-        $this->assertEquals(0, AcceptHeader::compare('', ''));
-        $this->assertEquals(0, AcceptHeader::compare('test', 'test2'));
-        $this->assertEquals(1, AcceptHeader::compare('test', 'test2;q=0.7'));
-        $this->assertEquals(-1, AcceptHeader::compare('test; q=0.7', 'test2'));
+        $header = new AcceptHeader([
+            AcceptHeaderItem::fromString(''),
+            new AcceptHeaderItem(''),
+            (new AcceptHeaderItem('*/*'))->withValue('')
+        ]);
 
-        $this->assertEquals(0, AcceptHeader::compare('test; q=0.7', 'test2; q=0.7'));
-        $this->assertEquals(0, AcceptHeader::compare('test; q=0.7', 'test2; q=0.7;p'));
-        $this->assertEquals(0, AcceptHeader::compare('test; q=0.7; test=23', 'test2; q=0.7;p=1'));
-        $this->assertEquals(1, AcceptHeader::compare('test; q=0.7; p=2; st=3', 'test2; q=0.7;p=1'));
-        $this->assertEquals(-1, AcceptHeader::compare('test; q=0.7', 'test2; q=0.7;p=1'));
-
-        $this->assertEquals(1, AcceptHeader::compare(
-            AcceptHeaderItem::fromString('test'),
-            AcceptHeaderItem::fromString('*')
-        ));
+        $this->assertCount(0, $header->getAll());
+        $this->assertSame('', (string)$header);
     }
 
-    public function testCompareHeaderItemValue(): void
+    public function testHeaderSanitize(): void
     {
-        $class = (new \ReflectionClass(AcceptHeader::class));
-        $compareValue = $class->getMethod('compareValue');
-        $compareValue->setAccessible(true);
+        $headers = AcceptHeader::fromString('text/*, text/html, ,;,text/html;level=1, */*')->getAll();
 
-        $this->assertEquals(0, $compareValue->invokeArgs(null, ['', '']));
-        $this->assertEquals(0, $compareValue->invokeArgs(null, ['*', '*']));
-        $this->assertEquals(0, $compareValue->invokeArgs(null, ['UTF-8', 'UTF-8']));
-        $this->assertEquals(1, $compareValue->invokeArgs(null, ['UTF-8', '*']));
-        $this->assertEquals(-1, $compareValue->invokeArgs(null, ['*', 'UTF-8']));
-
-        $this->assertEquals(0, $compareValue->invokeArgs(null, ['*/*', '*/*']));
-        $this->assertEquals(1, $compareValue->invokeArgs(null, ['type/*', '*/*']));
-        $this->assertEquals(1, $compareValue->invokeArgs(null, ['type/subtype', '*/*']));
-        $this->assertEquals(-1, $compareValue->invokeArgs(null, ['*/*', 'type/*']));
-        $this->assertEquals(-1, $compareValue->invokeArgs(null, ['*/*', 'type/subtype']));
-
-        $this->assertEquals(0, $compareValue->invokeArgs(null, ['*/*', '*/*']));
-        $this->assertEquals(0, $compareValue->invokeArgs(null, ['type/*', 'type/*']));
-        $this->assertEquals(1, $compareValue->invokeArgs(null, ['type/subtype', 'type/*']));
-        $this->assertEquals(-1, $compareValue->invokeArgs(null, ['type/*', 'type/subtype']));
+        $this->assertCount(3, $headers);
+        $this->assertSame('text/html', $headers[0]->getValue());
+        $this->assertSame('text/*', $headers[1]->getValue());
+        $this->assertSame('*/*', $headers[2]->getValue());
     }
 
-    public function testHeaderItem(): void
+    public function testHeaderConstructingTypeError(): void
     {
-        $item = new AcceptHeaderItem('text/html', 0.9, ['t' => 'test']);
+        $this->expectException(AcceptHeaderException::class);
 
-        $this->assertEquals('text/html; q=0.9; t=test', $item);
-        $this->assertEquals(0.9, $item->getQuality());
-        $this->assertEquals(['t' => 'test'], $item->getParams());
-
-        $item = $item->withValue('application/json');
-
-        $this->assertEquals('application/json', $item->getValue());
-
-        $item = $item->withQuality(0);
-
-        $this->assertEquals(0, $item->getQuality());
-
-        $item = $item->withParams(['n' => 'new']);
-
-        $this->assertEquals(['n' => 'new'], $item->getParams());
-
-        $wrongParamsItem = AcceptHeaderItem::fromString('text/html; q');
-
-        $this->assertEquals([], $wrongParamsItem->getParams());
-        $this->assertEquals(1.0, $wrongParamsItem->getQuality());
-
-        AcceptHeaderItem::fromString('');
+        new AcceptHeader(['*', 'UTF-8', ['text/html;level=1']]);
     }
 
-    public function testHeaderConstructing(): void
+    public function testImmutability(): void
     {
-        $acceptCharset = new AcceptHeader(['*', 'UTF-8']);
+        $firstItem = AcceptHeaderItem::fromString('*/*;q=1');
+        $secondItem = AcceptHeaderItem::fromString('text/*;q=0.9');
+        $header = new AcceptHeader([$firstItem]);
+        $firstItem->withValue('text/html');
 
-        $this->assertFalse($acceptCharset->has('unicode'));
-        $this->assertNull($acceptCharset->get('unicode'));
-
-        $sorted = $acceptCharset->sorted();
-        $this->assertEquals('UTF-8', $sorted[0]);
-        $this->assertEquals('*', $sorted[1]);
-        $this->assertEquals('UTF-8, *', $acceptCharset);
-
-        $acceptCharset = $acceptCharset->add(AcceptHeaderItem::fromString('unicode'));
-
-        $this->assertTrue($acceptCharset->has('unicode'));
-        $this->assertNotNull($acceptCharset->get('unicode'));
-
-        $sorted = $acceptCharset->sorted();
-        $this->assertEquals('UTF-8', $sorted[0]);
-        $this->assertEquals('unicode', $sorted[1]);
-        $this->assertEquals('*', $sorted[2]);
-        $this->assertEquals('UTF-8, unicode, *', $acceptCharset);
-
-        $acceptHeader = AcceptHeader::fromString('text/html; q=0.8, */*; q=0.7');
-        $acceptHeader = $acceptHeader->add('application/json');
-
-        $sorted = $acceptHeader->sorted();
-        $this->assertEquals('application/json', $sorted[0]);
-        $this->assertEquals('text/html; q=0.8', $sorted[1]);
-        $this->assertEquals('*/*; q=0.7', $sorted[2]);
+        $this->assertSame('*/*', $header->add($secondItem)->getAll()[0]->getValue());
     }
 
-    public function testHeader1(): void
+    /**
+     * @dataProvider sameQualityCompareProvider
+     * @param string $input
+     * @param string $a
+     * @param string $b
+     */
+    public function testCompareWithEqualQuality(string $input, string $a, string $b): void
     {
-        $acceptHeader = AcceptHeader::fromString('audio/*; q=0.2, audio/basic')->sorted();
-        $this->assertEquals('audio/basic', (string) $acceptHeader[0]);
-        $this->assertEquals('audio/*; q=0.2', (string) $acceptHeader[1]);
+        $headers = AcceptHeader::fromString($input)->getAll();
+
+        $this->assertCount(2, $headers);
+        $this->assertEquals($a, $headers[0]->getValue());
+        $this->assertEquals($b, $headers[1]->getValue());
     }
 
-    public function testHeader2(): void
+    /**
+     * @return iterable
+     */
+    public function sameQualityCompareProvider(): iterable
     {
-        $acceptHeader = AcceptHeader::fromString(
-            'text/*;q=0.3, text/html;q=0.7, text/html;level=1, text/html;level=2;q=0.4, */*;q=0.5'
-        )->sorted();
-
-        $this->assertEquals('text/html; level=1', $acceptHeader[0]);
-        $this->assertEquals('text/html; q=0.7', $acceptHeader[1]);
-        $this->assertEquals('*/*; q=0.5', $acceptHeader[2]);
-        $this->assertEquals('text/html; q=0.4; level=2', $acceptHeader[3]);
-        $this->assertEquals('text/*; q=0.3', $acceptHeader[4]);
+        return [
+            ['text/css;q=0.3, text/html;q=0.3', 'text/css', 'text/html'],
+            ['text/html;q=0.3, text/css;q=0.3', 'text/html', 'text/css'],
+            ['text/html;q=1, text/css', 'text/html', 'text/css'],
+            ['text/html, text/css;q=1', 'text/html', 'text/css'],
+        ];
     }
 
-    public function testHeader3(): void
+    public function testDuplicatedItems(): void
     {
-        $acceptHeader = AcceptHeader::fromString('text/*, text/html, text/html;level=1, */*')->sorted();
+        $header = AcceptHeader::fromString('*/*;q=0.9,text/html,*/*');
+        $this->assertSame('text/html, */*', (string)$header);
 
-        $this->assertEquals('text/html; level=1', $acceptHeader[0]);
-        $this->assertEquals('text/html', $acceptHeader[1]);
-        $this->assertEquals('text/*', $acceptHeader[2]);
-        $this->assertEquals('*/*', $acceptHeader[3]);
+        $header = AcceptHeader::fromString('text/html;q=0.4,*/*;q=0.9,text/html;q=0.6');
+        $this->assertSame('*/*; q=0.9, text/html; q=0.6', (string)$header);
     }
 
-    public function testHeader4(): void
+    public function testAccessor(): void
     {
-        $acceptHeader = AcceptHeader::fromString('text, text/html');
+        $acceptHeader = AcceptHeader::fromString('text/css;q=0.3, text/html;q=0.3');
+        $this->assertTrue($acceptHeader->has('tExt/css '));
+        $this->assertFalse($acceptHeader->has('tExt/javascript'));
 
-        $this->assertEquals('text', (string) $acceptHeader->all()[0]);
-        $this->assertEquals('text/html', (string) $acceptHeader->all()[1]);
+        $this->assertSame('text/css; q=0.3', (string)$acceptHeader->get('text/css'));
+        $this->assertSame('text/html; q=0.3', (string)$acceptHeader->get('text/html'));
+    }
 
-        $this->assertEquals('text', (string) $acceptHeader->sorted()[0]);
-        $this->assertEquals('text/html', (string) $acceptHeader->sorted()[1]);
+    /**
+     * @dataProvider addAndSortProvider
+     * @param string $items
+     * @param string $item
+     * @param array  $expected
+     */
+    public function testAddAndSort(string $items, string $item, array $expected): void
+    {
+        $acceptHeader = AcceptHeader::fromString($items);
+        $acceptHeader = $acceptHeader->add($item);
+
+        $headers = $acceptHeader->getAll();
+        $this->assertCount(count($expected), $headers);
+
+        foreach ($expected as $i => $value) {
+            $this->assertSame($value, $headers[$i]->getValue());
+        }
+    }
+
+    /**
+     * @return iterable
+     */
+    public function addAndSortProvider(): iterable
+    {
+        return [
+            [
+                'text/css;q=0.3,text/html;q=0.4',
+                '',
+                ['text/html', 'text/css']
+            ],
+            [
+                'text/css;q=0.3,text/html;q=0.4',
+                'text/javascript;q=0.35',
+                ['text/html', 'text/javascript', 'text/css']
+            ],
+            [
+                'text/css;q=0.3,text/html;q=0.4',
+                'text/javascript;q=0.5',
+                ['text/javascript', 'text/html', 'text/css']
+            ],
+            [
+                'text/css;q=0.3,text/html;q=0.4',
+                'text/javascript;q=.25',
+                ['text/html', 'text/css', 'text/javascript']
+            ],
+        ];
+    }
+
+    /**
+     * @dataProvider compareProvider
+     * @param string $items
+     * @param array  $expected
+     */
+    public function testCompare(string $items, array $expected): void
+    {
+        $acceptHeader = AcceptHeader::fromString($items);
+
+        $headers = $acceptHeader->getAll();
+        $this->assertCount(count($expected), $headers);
+
+        foreach ($expected as $i => $value) {
+            $this->assertSame($value, (string)$headers[$i]);
+        }
+    }
+
+    /**
+     * @return iterable
+     */
+    public function compareProvider(): iterable
+    {
+        return [
+            //quality based
+            ['text/html;q=0.8, text/css;q=0.9', ['text/css; q=0.9', 'text/html; q=0.8']],
+            ['text/*;q=0.9, text/css;q=0.8;a=b;c=d', ['text/*; q=0.9', 'text/css; q=0.8; a=b; c=d']],
+            ['text/html;q=1, text/*;', ['text/html', 'text/*']],
+            ['text/html, text/css;q=1', ['text/html', 'text/css']],
+
+            //.../subType based
+            ['text/html, text/css', ['text/html', 'text/css']],
+            ['text/css, text/html', ['text/css', 'text/html']],
+            ['text/*, text/html', ['text/html', 'text/*']],
+            ['text/html, text/*', ['text/html', 'text/*']],
+
+            //type/... based
+            ['text/html, */css', ['text/html', '*/css']],
+            ['*/css,text/html', ['text/html', '*/css']],
+
+            //value based
+            ['text, */*', ['text', '*/*']],
+            ['text, *', ['text', '*']],
+            ['*/*, text', ['text', '*/*']],
+            ['*, text', ['text', '*']],
+            ['*, */*', ['*', '*/*']],
+            ['*/*,*', ['*/*', '*']],
+            ['*,*', ['*']],
+
+            //params count based
+            ['text-html, text-css;a=b;c=d', ['text-css; a=b; c=d', 'text-html']],
+            ['text-html;a=b;c=d;e=f, text-css;a=b;c=d', ['text-html; a=b; c=d; e=f', 'text-css; a=b; c=d']],
+        ];
     }
 }

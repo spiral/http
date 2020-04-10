@@ -11,6 +11,8 @@ declare(strict_types=1);
 
 namespace Spiral\Http\Header;
 
+use Spiral\Http\Exception\AcceptHeaderException;
+
 /**
  * Can be used for parsing and sorting "Accept*" header items by preferable by the HTTP client.
  *
@@ -26,11 +28,11 @@ final class AcceptHeader
     private $items = [];
 
     /** @var bool */
-    private $sorted = true;
+    private $sorted = false;
 
     /**
      * AcceptHeader constructor.
-     * @param array|AcceptHeaderItem[]|string[] $items
+     * @param AcceptHeaderItem[]|string[] $items
      */
     public function __construct(array $items = [])
     {
@@ -44,7 +46,7 @@ final class AcceptHeader
      */
     public function __toString(): string
     {
-        return implode(', ', $this->sorted());
+        return implode(', ', $this->getAll());
     }
 
     /**
@@ -54,11 +56,13 @@ final class AcceptHeader
     public static function fromString(string $raw): self
     {
         $header = new static();
-        $header->sorted = false;
 
         $parts = explode(',', $raw);
         foreach ($parts as $part) {
-            $header->addItem(trim($part));
+            $part = trim($part);
+            if ($part !== '') {
+                $header->addItem($part);
+            }
         }
 
         return $header;
@@ -82,13 +86,7 @@ final class AcceptHeader
      */
     public function has(string $value): bool
     {
-        foreach ($this->items as $item) {
-            if (strcasecmp($item->getValue(), trim($value)) === 0) {
-                return true;
-            }
-        }
-
-        return false;
+        return isset($this->items[strtolower(trim($value))]);
     }
 
     /**
@@ -97,31 +95,7 @@ final class AcceptHeader
      */
     public function get(string $value): ?AcceptHeaderItem
     {
-        foreach ($this->items as $item) {
-            if (strcasecmp($item->getValue(), trim($value)) === 0) {
-                return $item;
-            }
-        }
-
-        return null;
-    }
-
-    /**
-     * @return AcceptHeaderItem[]
-     */
-    public function all(): array
-    {
-        return $this->items;
-    }
-
-    /**
-     * @return AcceptHeaderItem[]
-     */
-    public function sorted(): array
-    {
-        $this->sort();
-
-        return $this->items;
+        return $this->items[strtolower(trim($value))] ?? null;
     }
 
     /**
@@ -131,25 +105,42 @@ final class AcceptHeader
      */
     private function addItem($item): void
     {
-        $this->items[] = $item instanceof AcceptHeaderItem ? $item : AcceptHeaderItem::fromString((string)$item);
-        $this->sorted = false;
+        if (is_scalar($item)) {
+            $item = AcceptHeaderItem::fromString((string)$item);
+        }
+
+        if (!$item instanceof AcceptHeaderItem) {
+            throw new AcceptHeaderException(sprintf(
+                'Accept Header item expected to be an instance of `%s` or a string, got `%s`',
+                AcceptHeaderItem::class,
+                is_object($item) ? get_class($item) : gettype($item)
+            ));
+        }
+
+        $value = strtolower($item->getValue());
+        if ($value !== '' && (!$this->has($value) || self::compare($item, $this->get($value)) === 1)) {
+            $this->sorted = false;
+            $this->items[$value] = $item;
+        }
     }
 
     /**
-     * Sort header items by weight.
+     * @return AcceptHeaderItem[]
      */
-    private function sort(): void
+    public function getAll(): array
     {
         if (!$this->sorted) {
             /**
              * Sort item in descending order.
              */
-            usort($this->items, static function (AcceptHeaderItem $a, AcceptHeaderItem $b) {
+            uasort($this->items, static function (AcceptHeaderItem $a, AcceptHeaderItem $b) {
                 return self::compare($a, $b) * -1;
             });
 
             $this->sorted = true;
         }
+
+        return array_values($this->items);
     }
 
     /**
@@ -160,11 +151,8 @@ final class AcceptHeader
      * @param AcceptHeaderItem|string $b
      * @return int
      */
-    public static function compare($a, $b): int
+    private static function compare(AcceptHeaderItem $a, AcceptHeaderItem $b): int
     {
-        $a = $a instanceof AcceptHeaderItem ? $a : AcceptHeaderItem::fromString((string)$a);
-        $b = $b instanceof AcceptHeaderItem ? $b : AcceptHeaderItem::fromString((string)$b);
-
         if ($a->getQuality() === $b->getQuality()) {
             // If quality are same value with more params has more weight.
             if (count($a->getParams()) === count($b->getParams())) {
@@ -173,10 +161,10 @@ final class AcceptHeader
                 return static::compareValue($a->getValue(), $b->getValue());
             }
 
-            return (count($a->getParams()) > count($b->getParams())) ? 1 : -1;
+            return count($a->getParams()) <=> count($b->getParams());
         }
 
-        return ($a->getQuality() > $b->getQuality()) ? 1 : -1;
+        return $a->getQuality() <=> $b->getQuality();
     }
 
     /**
@@ -195,13 +183,13 @@ final class AcceptHeader
             [$typeB, $subtypeB] = explode('/', $b, 2);
 
             if ($typeA === $typeB) {
-                return static::compareAsterisk($subtypeA, $subtypeB);
+                return static::compareAtomic($subtypeA, $subtypeB);
             }
 
-            return static::compareAsterisk($typeA, $typeB);
+            return static::compareAtomic($typeA, $typeB);
         }
 
-        return static::compareAsterisk($a, $b);
+        return static::compareAtomic($a, $b);
     }
 
     /**
@@ -209,9 +197,28 @@ final class AcceptHeader
      * @param string $b
      * @return int
      */
-    private static function compareAsterisk(string $a, string $b): int
+    private static function compareAtomic(string $a, string $b): int
     {
-        return $b === '*' && $a !== '*' ? 1
-            : ($b !== '*' && $a === '*' ? -1 : 0);
+        if (mb_strpos($a, '*/') === 0) {
+            $a = '*';
+        }
+
+        if (mb_strpos($b, '*/') === 0) {
+            $b = '*';
+        }
+
+        if (strtolower($a) === strtolower($b)) {
+            return 0;
+        }
+
+        if ($a === '*') {
+            return -1;
+        }
+
+        if ($b === '*') {
+            return 1;
+        }
+
+        return 0;
     }
 }
