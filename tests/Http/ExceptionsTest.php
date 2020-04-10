@@ -62,7 +62,7 @@ class ExceptionsTest extends TestCase
     /**
      * @dataProvider allExceptionsWithPreviousSet
      */
-    public function testPreviousSetter(\Throwable $exception)
+    public function testPreviousSetter(\Throwable $exception): void
     {
         $this->assertInstanceOf(\Throwable::class, $exception->getPrevious());
     }

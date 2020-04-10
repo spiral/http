@@ -17,7 +17,7 @@ use Spiral\Http\Header\AcceptHeaderItem;
 
 class AcceptHeaderTest extends TestCase
 {
-    public function testHeaderItemCompare()
+    public function testHeaderItemCompare(): void
     {
         $this->assertEquals(0, AcceptHeaderItem::compare('', ''));
         $this->assertEquals(0, AcceptHeaderItem::compare('test', 'test2'));
@@ -36,7 +36,7 @@ class AcceptHeaderTest extends TestCase
         ));
     }
 
-    public function testCompareHeaderItemValue()
+    public function testCompareHeaderItemValue(): void
     {
         $class = (new \ReflectionClass(AcceptHeaderItem::class));
         $compareValue = $class->getMethod('compareValue');
@@ -60,7 +60,7 @@ class AcceptHeaderTest extends TestCase
         $this->assertEquals(-1, $compareValue->invokeArgs(null, ['type/*', 'type/subtype']));
     }
 
-    public function testHeaderItem()
+    public function testHeaderItem(): void
     {
         $item = new AcceptHeaderItem('text/html', 0.9, ['t' => 'test']);
 
@@ -88,7 +88,7 @@ class AcceptHeaderTest extends TestCase
         AcceptHeaderItem::fromString('');
     }
 
-    public function testHeaderConstructing()
+    public function testHeaderConstructing(): void
     {
         $acceptCharset = new AcceptHeader(['*', 'UTF-8']);
 
@@ -120,14 +120,14 @@ class AcceptHeaderTest extends TestCase
         $this->assertEquals('*/*; q=0.7', $sorted[2]);
     }
 
-    public function testHeader1()
+    public function testHeader1(): void
     {
         $acceptHeader = AcceptHeader::fromString('audio/*; q=0.2, audio/basic')->sorted();
         $this->assertEquals('audio/basic', (string) $acceptHeader[0]);
         $this->assertEquals('audio/*; q=0.2', (string) $acceptHeader[1]);
     }
 
-    public function testHeader2()
+    public function testHeader2(): void
     {
         $acceptHeader = AcceptHeader::fromString(
             'text/*;q=0.3, text/html;q=0.7, text/html;level=1, text/html;level=2;q=0.4, */*;q=0.5'
@@ -140,7 +140,7 @@ class AcceptHeaderTest extends TestCase
         $this->assertEquals('text/*; q=0.3', $acceptHeader[4]);
     }
 
-    public function testHeader3()
+    public function testHeader3(): void
     {
         $acceptHeader = AcceptHeader::fromString('text/*, text/html, text/html;level=1, */*')->sorted();
 
@@ -150,7 +150,7 @@ class AcceptHeaderTest extends TestCase
         $this->assertEquals('*/*', $acceptHeader[3]);
     }
 
-    public function testHeader4()
+    public function testHeader4(): void
     {
         $acceptHeader = AcceptHeader::fromString('text, text/html');
 
