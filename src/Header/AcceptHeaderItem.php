@@ -45,6 +45,10 @@ final class AcceptHeaderItem
      */
     public function __toString(): string
     {
+        if ($this->value === '') {
+            return '';
+        }
+
         $parts = [$this->value];
 
         if ($this->quality < 1) {

@@ -19,22 +19,12 @@ class AcceptHeaderItemTest extends TestCase
 {
     /**
      * @dataProvider emptyItemProvider
-     * @param string $value
+     * @param AcceptHeaderItem $item
      */
-    public function testEmptyItem(string $value): void
+    public function testEmptyItem(AcceptHeaderItem $item): void
     {
-        $item = AcceptHeaderItem::fromString($value);
         $this->assertEmpty($item->getValue());
-
-        $acceptHeader = new AcceptHeader([$item]);
-        $this->assertCount(0, $acceptHeader->getAll());
-
-        $acceptHeader = $acceptHeader->add($item);
-        $this->assertCount(0, $acceptHeader->getAll());
-
-        $item = $item->withValue($value);
-        $acceptHeader = $acceptHeader->add($item);
-        $this->assertCount(0, $acceptHeader->getAll());
+        $this->assertEquals('', (string)$item);
     }
 
     /**
@@ -42,7 +32,14 @@ class AcceptHeaderItemTest extends TestCase
      */
     public function emptyItemProvider(): iterable
     {
-        return [[''], [' ']];
+        $values = ['', ' '];
+        foreach ($values as $value) {
+            yield from [
+                [AcceptHeaderItem::fromString($value)],
+                [new AcceptHeaderItem($value)],
+                [(new AcceptHeaderItem('*/*'))->withValue($value)],
+            ];
+        }
     }
 
     /**
