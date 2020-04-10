@@ -192,6 +192,7 @@ class AcceptHeaderTest extends TestCase
             ['*/css,text/html', ['text/html', '*/css']],
 
             //value based
+            ['text/*, text', ['text/*', 'text']],
             ['text, */*', ['text', '*/*']],
             ['text, *', ['text', '*']],
             ['*/*, text', ['text', '*/*']],
