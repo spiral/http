@@ -169,6 +169,9 @@ class InputManagerTest extends TestCase
         $this->assertSame($expected, $input->isJsonExpected());
     }
 
+    /**
+     * @return iterable
+     */
     public function isJsonExpectedProvider(): iterable
     {
         return [
