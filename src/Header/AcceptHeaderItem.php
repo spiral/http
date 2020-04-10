@@ -25,7 +25,7 @@ final class AcceptHeaderItem
     private $quality;
 
     /** @var array */
-    private $params;
+    private $params = [];
 
     /**
      * AcceptHeaderItem constructor.
@@ -35,9 +35,9 @@ final class AcceptHeaderItem
      */
     public function __construct(string $mime, float $quality = 1.0, array $params = [])
     {
-        $this->value = $mime;
-        $this->quality = $quality;
-        $this->params = $params;
+        $this->setValue($mime);
+        $this->setQuality($quality);
+        $this->setParams($params);
     }
 
     /**
@@ -45,7 +45,7 @@ final class AcceptHeaderItem
      */
     public function __toString(): string
     {
-        $parts = [$this->getValue()];
+        $parts = [$this->value];
 
         if ($this->quality < 1) {
             $parts[] = "q=$this->quality";
@@ -62,13 +62,13 @@ final class AcceptHeaderItem
      * Parse accept header string.
      *
      * @param string $string
-     * @return static
+     * @return static|null
      */
     public static function fromString(string $string): self
     {
         $elements = explode(';', $string);
 
-        $mime = trim((string)array_shift($elements));
+        $mime = trim(array_shift($elements));
         $quality = 1.0;
         $params = [];
 
@@ -83,7 +83,7 @@ final class AcceptHeaderItem
             $name = trim($parsed[0]);
             $value = trim($parsed[1]);
 
-            if ($name === 'q') {
+            if (strcasecmp($name, 'q') === 0) {
                 $quality = (float)$value;
             } else {
                 $params[$name] = $value;
@@ -93,7 +93,6 @@ final class AcceptHeaderItem
         return new static($mime, $quality, $params);
     }
 
-
     /**
      * @param string $value
      * @return $this
@@ -101,7 +100,7 @@ final class AcceptHeaderItem
     public function withValue(string $value): self
     {
         $item = clone $this;
-        $item->value = $value;
+        $item->setValue($value);
 
         return $item;
     }
@@ -121,7 +120,7 @@ final class AcceptHeaderItem
     public function withQuality(float $quality): self
     {
         $item = clone $this;
-        $item->quality = $quality;
+        $item->setQuality($quality);
 
         return $item;
     }
@@ -135,6 +134,18 @@ final class AcceptHeaderItem
     }
 
     /**
+     * @param array $params
+     * @return $this
+     */
+    public function withParams(array $params): self
+    {
+        $item = clone $this;
+        $item->setParams($params);
+
+        return $item;
+    }
+
+    /**
      * @return array
      */
     public function getParams(): array
@@ -143,14 +154,39 @@ final class AcceptHeaderItem
     }
 
     /**
-     * @param array $params
-     * @return $this
+     * @param string $value
      */
-    public function withParams(array $params): self
+    private function setValue(string $value): void
     {
-        $item = clone $this;
-        $item->params = $params;
+        $this->value = trim($value);
+    }
 
-        return $item;
+    /**
+     * @param float $quality
+     */
+    private function setQuality(float $quality): void
+    {
+        $this->quality = min(max($quality, 0), 1);
+    }
+
+    /**
+     * @param array $params
+     */
+    private function setParams(array $params): void
+    {
+        foreach ($params as $name => $value) {
+            if (is_numeric($name) || !is_scalar($value)) {
+                continue;
+            }
+
+            $name = trim($name);
+            $value = trim($value);
+
+            if ($name === '' || $value === '') {
+                continue;
+            }
+
+            $this->params[$name] = $value;
+        }
     }
 }
