@@ -19,18 +19,18 @@ class AcceptHeaderTest extends TestCase
 {
     public function testHeaderItemCompare(): void
     {
-        $this->assertEquals(0, AcceptHeaderItem::compare('', ''));
-        $this->assertEquals(0, AcceptHeaderItem::compare('test', 'test2'));
-        $this->assertEquals(1, AcceptHeaderItem::compare('test', 'test2;q=0.7'));
-        $this->assertEquals(-1, AcceptHeaderItem::compare('test; q=0.7', 'test2'));
+        $this->assertEquals(0, AcceptHeader::compare('', ''));
+        $this->assertEquals(0, AcceptHeader::compare('test', 'test2'));
+        $this->assertEquals(1, AcceptHeader::compare('test', 'test2;q=0.7'));
+        $this->assertEquals(-1, AcceptHeader::compare('test; q=0.7', 'test2'));
 
-        $this->assertEquals(0, AcceptHeaderItem::compare('test; q=0.7', 'test2; q=0.7'));
-        $this->assertEquals(0, AcceptHeaderItem::compare('test; q=0.7', 'test2; q=0.7;p'));
-        $this->assertEquals(0, AcceptHeaderItem::compare('test; q=0.7; test=23', 'test2; q=0.7;p=1'));
-        $this->assertEquals(1, AcceptHeaderItem::compare('test; q=0.7; p=2; st=3', 'test2; q=0.7;p=1'));
-        $this->assertEquals(-1, AcceptHeaderItem::compare('test; q=0.7', 'test2; q=0.7;p=1'));
+        $this->assertEquals(0, AcceptHeader::compare('test; q=0.7', 'test2; q=0.7'));
+        $this->assertEquals(0, AcceptHeader::compare('test; q=0.7', 'test2; q=0.7;p'));
+        $this->assertEquals(0, AcceptHeader::compare('test; q=0.7; test=23', 'test2; q=0.7;p=1'));
+        $this->assertEquals(1, AcceptHeader::compare('test; q=0.7; p=2; st=3', 'test2; q=0.7;p=1'));
+        $this->assertEquals(-1, AcceptHeader::compare('test; q=0.7', 'test2; q=0.7;p=1'));
 
-        $this->assertEquals(1, AcceptHeaderItem::compare(
+        $this->assertEquals(1, AcceptHeader::compare(
             AcceptHeaderItem::fromString('test'),
             AcceptHeaderItem::fromString('*')
         ));
@@ -38,7 +38,7 @@ class AcceptHeaderTest extends TestCase
 
     public function testCompareHeaderItemValue(): void
     {
-        $class = (new \ReflectionClass(AcceptHeaderItem::class));
+        $class = (new \ReflectionClass(AcceptHeader::class));
         $compareValue = $class->getMethod('compareValue');
         $compareValue->setAccessible(true);
 

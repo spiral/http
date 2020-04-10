@@ -30,8 +30,8 @@ final class AcceptHeaderItem
     /**
      * AcceptHeaderItem constructor.
      * @param string $mime
-     * @param float $quality
-     * @param array $params
+     * @param float  $quality
+     * @param array  $params
      */
     public function __construct(string $mime, float $quality = 1.0, array $params = [])
     {
@@ -68,7 +68,7 @@ final class AcceptHeaderItem
     {
         $elements = explode(';', $string);
 
-        $mime = trim((string) array_shift($elements));
+        $mime = trim((string)array_shift($elements));
         $quality = 1.0;
         $params = [];
 
@@ -84,7 +84,7 @@ final class AcceptHeaderItem
             $value = trim($parsed[1]);
 
             if ($name === 'q') {
-                $quality = floatval($value);
+                $quality = (float)$value;
             } else {
                 $params[$name] = $value;
             }
@@ -93,32 +93,6 @@ final class AcceptHeaderItem
         return new static($mime, $quality, $params);
     }
 
-    /**
-     * Compare to header items, witch one is preferable.
-     * Return 1 if first value preferable or -1 if second, 0 in case of same weight.
-     *
-     * @param AcceptHeaderItem|string $a
-     * @param AcceptHeaderItem|string $b
-     * @return int
-     */
-    public static function compare($a, $b): int
-    {
-        $a = $a instanceof AcceptHeaderItem ? $a : AcceptHeaderItem::fromString((string) $a);
-        $b = $b instanceof AcceptHeaderItem ? $b : AcceptHeaderItem::fromString((string) $b);
-
-        if ($a->getQuality() === $b->getQuality()) {
-            // If quality are same value with more params has more weight.
-            if (count($a->getParams()) === count($b->getParams())) {
-                // If quality and params then check for specific type or subtype.
-                // Means */* or * has less weight.
-                return static::compareValue($a->getValue(), $b->getValue());
-            }
-
-            return (count($a->getParams()) > count($b->getParams())) ? 1 : -1;
-        }
-
-        return ($a->getQuality() > $b->getQuality()) ? 1 : -1;
-    }
 
     /**
      * @param string $value
@@ -178,42 +152,5 @@ final class AcceptHeaderItem
         $item->params = $params;
 
         return $item;
-    }
-
-
-    /**
-     * Compare to header item values. More specific types ( with no "*" ) has more value.
-     * Return 1 if first value preferable or -1 if second, 0 in case of same weight.
-     *
-     * @param string $a
-     * @param string $b
-     * @return int
-     */
-    private static function compareValue(string $a, string $b): int
-    {
-        // Check "Accept" headers values with it is type and subtype.
-        if (strpos($a, '/') !== false && strpos($b, '/') !== false) {
-            [$typeA, $subtypeA] = explode('/', $a, 2);
-            [$typeB, $subtypeB] = explode('/', $b, 2);
-
-            if ($typeA === $typeB) {
-                return static::compareAsterisk($subtypeA, $subtypeB);
-            }
-
-            return static::compareAsterisk($typeA, $typeB);
-        }
-
-        return static::compareAsterisk($a, $b);
-    }
-
-    /**
-     * @param string $a
-     * @param string $b
-     * @return int
-     */
-    private static function compareAsterisk(string $a, string $b)
-    {
-        return $b === '*' && $a !== '*' ? 1
-            : ($b !== '*' && $a === '*' ? -1 : 0);
     }
 }
