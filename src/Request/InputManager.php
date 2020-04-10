@@ -19,6 +19,7 @@ use Psr\Http\Message\UriInterface;
 use Spiral\Core\Container\SingletonInterface;
 use Spiral\Core\Exception\ScopeException;
 use Spiral\Http\Exception\InputException;
+use Spiral\Http\Header\AcceptHeader;
 
 /**
  * Provides simplistic way to access request input data in controllers and can also be used to
@@ -97,6 +98,14 @@ final class InputManager implements SingletonInterface
      * @var string
      */
     private $prefix = '';
+
+    /**
+     * List of content types that must be considered as JSON.
+     * @var array
+     */
+    private $jsonTypes = [
+        'application/json'
+    ];
 
     /**
      * @param ContainerInterface $container
@@ -240,7 +249,27 @@ final class InputManager implements SingletonInterface
      */
     public function isJsonExpected(): bool
     {
-        return $this->request()->getHeaderLine('Accept') == 'application/json';
+        $acceptHeader = AcceptHeader::fromString($this->request()->getHeaderLine('Accept'));
+        foreach ($this->jsonTypes as $jsonType) {
+            if ($acceptHeader->has($jsonType)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Add new content type that will be considered as JSON.
+     *
+     * @param string $type
+     * @return $this
+     */
+    public function addJsonType(string $type): self
+    {
+        $this->jsonTypes[] = $type;
+
+        return $this;
     }
 
     /**
