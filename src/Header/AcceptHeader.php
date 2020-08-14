@@ -99,6 +99,25 @@ final class AcceptHeader
     }
 
     /**
+     * @return AcceptHeaderItem[]
+     */
+    public function getAll(): array
+    {
+        if (!$this->sorted) {
+            /**
+             * Sort item in descending order.
+             */
+            uasort($this->items, static function (AcceptHeaderItem $a, AcceptHeaderItem $b) {
+                return self::compare($a, $b) * -1;
+            });
+
+            $this->sorted = true;
+        }
+
+        return array_values($this->items);
+    }
+
+    /**
      * Add new item to list.
      *
      * @param AcceptHeaderItem|string $item
@@ -122,25 +141,6 @@ final class AcceptHeader
             $this->sorted = false;
             $this->items[$value] = $item;
         }
-    }
-
-    /**
-     * @return AcceptHeaderItem[]
-     */
-    public function getAll(): array
-    {
-        if (!$this->sorted) {
-            /**
-             * Sort item in descending order.
-             */
-            uasort($this->items, static function (AcceptHeaderItem $a, AcceptHeaderItem $b) {
-                return self::compare($a, $b) * -1;
-            });
-
-            $this->sorted = true;
-        }
-
-        return array_values($this->items);
     }
 
     /**

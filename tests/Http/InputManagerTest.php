@@ -182,6 +182,40 @@ class InputManagerTest extends TestCase
         ];
     }
 
+    /**
+     * @dataProvider isJsonExpectedOnSoftMatchProvider
+     * @param bool        $expected
+     * @param string|null $acceptHeader
+     */
+    public function testIsJsonExpectedOnSoftMatch(bool $expected, ?string $acceptHeader): void
+    {
+        $request = new ServerRequest(
+            [],
+            [],
+            'http://domain.com/hello-world',
+            'GET',
+            'php://input',
+            $acceptHeader !== null ? ['Accept' => $acceptHeader] : []
+        );
+        $this->container->bind(ServerRequestInterface::class, $request);
+
+        $this->assertFalse($this->input->isJsonExpected());
+        $this->assertSame($expected, $this->input->isJsonExpected(true));
+    }
+
+    /**
+     * @return iterable
+     */
+    public function isJsonExpectedOnSoftMatchProvider(): iterable
+    {
+        return [
+            [false, null],
+            [false, 'text/html'],
+            [true, 'text/json'],
+            [true, 'application/vnd.api+json'],
+        ];
+    }
+
     public function testRemoteIP(): void
     {
         $request = new ServerRequest(

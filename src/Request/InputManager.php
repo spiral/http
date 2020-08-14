@@ -233,11 +233,23 @@ final class InputManager implements SingletonInterface
     }
 
     /**
-     * Check if request was made using XmlHttpRequest.
+     * Check if request was via AJAX.
+     * Legacy-support alias for isXmlHttpRequest()
+     * @see isXmlHttpRequest()
      *
      * @return bool
      */
     public function isAjax(): bool
+    {
+        return $this->isXmlHttpRequest();
+    }
+
+    /**
+     * Check if request was made using XmlHttpRequest.
+     *
+     * @return bool
+     */
+    public function isXmlHttpRequest(): bool
     {
         return mb_strtolower(
             $this->request()->getHeaderLine('X-Requested-With')
@@ -247,14 +259,24 @@ final class InputManager implements SingletonInterface
     /**
      * Client requesting json response by Accept header.
      *
+     * @param bool $softMatch
      * @return bool
      */
-    public function isJsonExpected(): bool
+    public function isJsonExpected(bool $softMatch = false): bool
     {
         $acceptHeader = AcceptHeader::fromString($this->request()->getHeaderLine('Accept'));
         foreach ($this->jsonTypes as $jsonType) {
             if ($acceptHeader->has($jsonType)) {
                 return true;
+            }
+        }
+
+        if ($softMatch) {
+            foreach ($acceptHeader->getAll() as $item) {
+                $itemValue = strtolower($item->getValue());
+                if (str_ends_with($itemValue, '/json') || str_ends_with($itemValue, '+json')) {
+                    return true;
+                }
             }
         }
 
