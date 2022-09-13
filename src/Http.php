@@ -1,52 +1,30 @@
 <?php
 
-/**
- * Spiral Framework.
- *
- * @license   MIT
- * @author    Anton Titov (Wolfy-J)
- */
-
 declare(strict_types=1);
 
 namespace Spiral\Http;
 
 use Psr\Container\ContainerInterface;
+use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Spiral\Http\Config\HttpConfig;
+use Spiral\Http\Event\RequestHandled;
+use Spiral\Http\Event\RequestReceived;
 use Spiral\Http\Exception\HttpException;
 
 final class Http implements RequestHandlerInterface
 {
-    /** @var HttpConfig */
-    protected $config;
-
-    /** @var Pipeline */
-    protected $pipeline;
-
-    /** @var ResponseFactoryInterface */
-    protected $responseFactory;
-
-    /** @var ContainerInterface */
-    protected $container;
-
-    /** @var RequestHandlerInterface */
-    protected $handler;
+    private ?RequestHandlerInterface $handler = null;
 
     public function __construct(
-        HttpConfig $config,
-        Pipeline $pipeline,
-        ResponseFactoryInterface $responseFactory,
-        ContainerInterface $container
+        private readonly HttpConfig $config,
+        private readonly Pipeline $pipeline,
+        private readonly ResponseFactoryInterface $responseFactory,
+        private readonly ContainerInterface $container
     ) {
-        $this->config = $config;
-        $this->pipeline = $pipeline;
-        $this->responseFactory = $responseFactory;
-        $this->container = $container;
-
         foreach ($this->config->getMiddleware() as $middleware) {
             $this->pipeline->pushMiddleware($this->container->get($middleware));
         }
@@ -57,34 +35,35 @@ final class Http implements RequestHandlerInterface
         return $this->pipeline;
     }
 
-    /**
-     * @param RequestHandlerInterface|callable $handler
-     */
-    public function setHandler($handler): self
+    public function setHandler(callable|RequestHandlerInterface $handler): self
     {
-        if ($handler instanceof RequestHandlerInterface) {
-            $this->handler = $handler;
-        } elseif (is_callable($handler)) {
-            $this->handler = new CallableHandler($handler, $this->responseFactory);
-        } else {
-            throw new HttpException(
-                'Invalid handler is given, expects callable or RequestHandlerInterface.'
-            );
-        }
+        $this->handler = $handler instanceof RequestHandlerInterface
+            ? $handler
+            : new CallableHandler($handler, $this->responseFactory);
 
         return $this;
     }
 
     /**
-     *
      * @throws HttpException
      */
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
-        if (empty($this->handler)) {
+        $dispatcher = $this->container->has(EventDispatcherInterface::class)
+            ? $this->container->get(EventDispatcherInterface::class)
+            : null;
+
+
+        $dispatcher?->dispatch(new RequestReceived($request));
+
+        if ($this->handler === null) {
             throw new HttpException('Unable to run HttpCore, no handler is set.');
         }
 
-        return $this->pipeline->withHandler($this->handler)->handle($request);
+        $response = $this->pipeline->withHandler($this->handler)->handle($request);
+
+        $dispatcher?->dispatch(new RequestHandled($request, $response));
+
+        return $response;
     }
 }

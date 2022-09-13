@@ -1,12 +1,5 @@
 <?php
 
-/**
- * Spiral Framework.
- *
- * @license   MIT
- * @author    Anton Titov (Wolfy-J)
- */
-
 declare(strict_types=1);
 
 namespace Spiral\Http\Config;
@@ -18,16 +11,14 @@ final class HttpConfig extends InjectableConfig
 {
     public const CONFIG = 'http';
 
-    /**
-     * @var array
-     */
-    protected $config = [
+    protected array $config = [
         'basePath'   => '/',
         'headers'    => [
             'Content-Type' => 'text/html; charset=UTF-8',
         ],
         'middleware' => [],
         'chunkSize' => null,
+        'inputBags' => [],
     ];
 
     public function getBasePath(): string
@@ -50,7 +41,12 @@ final class HttpConfig extends InjectableConfig
      */
     public function getMiddleware(): array
     {
-        return $this->config['middleware'] ?? $this->config['middlewares'];
+        return $this->config['middleware'];
+    }
+
+    public function getInputBags(): array
+    {
+        return $this->config['inputBags'] ?? [];
     }
 
     /**

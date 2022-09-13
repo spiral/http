@@ -1,29 +1,22 @@
 <?php
 
-/**
- * Spiral Framework.
- *
- * @license   MIT
- * @author    Anton Titov (Wolfy-J)
- */
-
 declare(strict_types=1);
 
 namespace Spiral\Tests\Http;
 
 use PHPUnit\Framework\TestCase;
-use Psr\Http\Message\ResponseInterface;
+use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use Psr\Http\Server\MiddlewareInterface;
-use Psr\Http\Server\RequestHandlerInterface;
 use Spiral\Core\Container;
 use Spiral\Http\CallableHandler;
 use Spiral\Http\Config\HttpConfig;
+use Spiral\Http\Event\RequestHandled;
+use Spiral\Http\Event\RequestReceived;
 use Spiral\Http\Exception\HttpException;
 use Spiral\Http\Http;
 use Spiral\Http\Pipeline;
 use Spiral\Tests\Http\Diactoros\ResponseFactory;
-use Laminas\Diactoros\ServerRequest;
+use Nyholm\Psr7\ServerRequest;
 
 class HttpTest extends TestCase
 {
@@ -48,7 +41,7 @@ class HttpTest extends TestCase
             return 'hello world';
         });
 
-        $response = $core->handle(new ServerRequest());
+        $response = $core->handle(new ServerRequest('GET', ''));
         $this->assertSame('hello world', (string)$response->getBody());
     }
 
@@ -58,16 +51,8 @@ class HttpTest extends TestCase
 
         $core = $this->getCore();
 
-        $response = $core->handle(new ServerRequest());
+        $response = $core->handle(new ServerRequest('GET', ''));
         $this->assertSame('hello world', (string)$response->getBody());
-    }
-
-    public function testBadHandler(): void
-    {
-        $this->expectException(HttpException::class);
-
-        $core = $this->getCore();
-        $core->setHandler('hi');
     }
 
     public function testHandlerInterface(): void
@@ -77,7 +62,7 @@ class HttpTest extends TestCase
             return 'hello world';
         }, new ResponseFactory(new HttpConfig(['headers' => []]))));
 
-        $response = $core->handle(new ServerRequest());
+        $response = $core->handle(new ServerRequest('GET', ''));
         $this->assertSame('hello world', (string)$response->getBody());
     }
 
@@ -89,7 +74,7 @@ class HttpTest extends TestCase
             return $resp->withAddedHeader('hello', 'value');
         });
 
-        $response = $core->handle(new ServerRequest());
+        $response = $core->handle(new ServerRequest('GET', ''));
         $this->assertSame(['text/html; charset=UTF-8'], $response->getHeader('Content-Type'));
         $this->assertSame(['value'], $response->getHeader('hello'));
     }
@@ -104,7 +89,7 @@ class HttpTest extends TestCase
             return $resp->withAddedHeader('hello', 'value');
         });
 
-        $response = $core->handle(new ServerRequest());
+        $response = $core->handle(new ServerRequest('GET', ''));
         $this->assertSame(['text/html; charset=UTF-8'], $response->getHeader('Content-Type'));
         $this->assertSame(['value'], $response->getHeader('hello'));
         $this->assertSame('hello!', (string)$response->getBody());
@@ -121,7 +106,7 @@ class HttpTest extends TestCase
             return $resp->withAddedHeader('hello', 'value');
         });
 
-        $response = $core->handle(new ServerRequest());
+        $response = $core->handle(new ServerRequest('GET', ''));
         $this->assertSame(['text/html; charset=UTF-8'], $response->getHeader('Content-Type'));
         $this->assertSame(['value'], $response->getHeader('hello'));
         $this->assertSame('world hello!', (string)$response->getBody());
@@ -142,7 +127,7 @@ class HttpTest extends TestCase
         });
 
         $this->assertSame(1, ob_get_level());
-        $response = $core->handle(new ServerRequest());
+        $response = $core->handle(new ServerRequest('GET', ''));
         $this->assertSame(['text/html; charset=UTF-8'], $response->getHeader('Content-Type'));
         $this->assertSame('world hello!', (string)$response->getBody());
         $this->assertSame(1, ob_get_level());
@@ -159,7 +144,7 @@ class HttpTest extends TestCase
             ];
         });
 
-        $response = $core->handle(new ServerRequest());
+        $response = $core->handle(new ServerRequest('GET', ''));
         $this->assertSame(404, $response->getStatusCode());
         $this->assertSame(['application/json'], $response->getHeader('Content-Type'));
     }
@@ -175,7 +160,7 @@ class HttpTest extends TestCase
             ]);
         });
 
-        $response = $core->handle(new ServerRequest());
+        $response = $core->handle(new ServerRequest('GET', ''));
         $this->assertSame(404, $response->getStatusCode());
         $this->assertSame(['application/json'], $response->getHeader('Content-Type'));
     }
@@ -188,7 +173,7 @@ class HttpTest extends TestCase
             return 'hello?';
         });
 
-        $response = $core->handle(new ServerRequest());
+        $response = $core->handle(new ServerRequest('GET', ''));
         $this->assertSame(['text/html; charset=UTF-8'], $response->getHeader('Content-Type'));
         $this->assertSame(['Value*'], $response->getHeader('header'));
         $this->assertSame('hello?', (string)$response->getBody());
@@ -205,7 +190,7 @@ class HttpTest extends TestCase
             return 'hello?';
         });
 
-        $response = $core->handle(new ServerRequest());
+        $response = $core->handle(new ServerRequest('GET', ''));
         $this->assertSame(['text/html; charset=UTF-8'], $response->getHeader('Content-Type'));
         $this->assertSame(['Value+', 'Value*'], $response->getHeader('header'));
         $this->assertSame('hello?', (string)$response->getBody());
@@ -222,7 +207,7 @@ class HttpTest extends TestCase
             return 'hello?';
         });
 
-        $response = $core->handle(new ServerRequest());
+        $response = $core->handle(new ServerRequest('GET', ''));
         $this->assertSame(['text/html; charset=UTF-8'], $response->getHeader('Content-Type'));
         $this->assertSame(['Value*', 'Value+'], $response->getHeader('header'));
         $this->assertSame('hello?', (string)$response->getBody());
@@ -238,7 +223,7 @@ class HttpTest extends TestCase
             return 'OK';
         });
 
-        $response = $core->handle(new ServerRequest());
+        $response = $core->handle(new ServerRequest('GET', ''));
         $this->assertSame('OK', (string)$response->getBody());
     }
 
@@ -252,9 +237,30 @@ class HttpTest extends TestCase
             throw new \RuntimeException('error');
         });
 
-        $response = $core->handle(new ServerRequest());
+        $response = $core->handle(new ServerRequest('GET', ''));
         $this->assertSame(['text/html;charset=UTF-8'], $response->getHeader('Content-Type'));
         $this->assertSame(['value'], $response->getHeader('hello'));
+    }
+
+    public function testEventsShouldBeDispatched(): void
+    {
+        $request = new ServerRequest('GET', '');
+
+        $dispatcher = $this->createMock(EventDispatcherInterface::class);
+        $dispatcher
+            ->expects(self::exactly(2))
+            ->method('dispatch')
+            ->with($this->callback(static fn (RequestReceived|RequestHandled $event): bool => true));
+        $this->container->bind(EventDispatcherInterface::class, $dispatcher);
+
+        $core = $this->getCore();
+
+        $core->setHandler(function () {
+            return 'hello world';
+        });
+
+        $response = $core->handle($request);
+        $this->assertSame('hello world', (string)$response->getBody());
     }
 
     protected function getCore(array $middleware = []): Http

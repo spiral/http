@@ -1,12 +1,5 @@
 <?php
 
-/**
- * Spiral Framework.
- *
- * @license   MIT
- * @author    Anton Titov (Wolfy-J)
- */
-
 declare(strict_types=1);
 
 namespace Spiral\Tests\Http;
@@ -18,7 +11,7 @@ use Spiral\Http\Exception\ResponseException;
 use Spiral\Http\ResponseWrapper;
 use Spiral\Tests\Http\Diactoros\ResponseFactory;
 use Spiral\Tests\Http\Diactoros\StreamFactory;
-use Laminas\Diactoros\Stream;
+use Nyholm\Psr7\Stream;
 
 class ResponsesTest extends TestCase
 {
@@ -31,12 +24,6 @@ class ResponsesTest extends TestCase
         $response = $this->getWrapper()->redirect('google.com', 301);
         $this->assertSame('google.com', $response->getHeaderLine('Location'));
         $this->assertSame(301, $response->getStatusCode());
-    }
-
-    public function testRedirectException(): void
-    {
-        $this->expectException(ResponseException::class);
-        $this->getWrapper()->redirect(true);
     }
 
     public function testJson(): void
@@ -82,7 +69,7 @@ class ResponsesTest extends TestCase
 
     public function testAttachmentStream(): void
     {
-        $response = $this->getWrapper()->attachment(new Stream(fopen(__FILE__, 'r'), 'r'), 'file.php');
+        $response = $this->getWrapper()->attachment(Stream::create(fopen(__FILE__, 'r')), 'file.php');
 
         $this->assertSame(200, $response->getStatusCode());
         $this->assertStringEqualsFile(__FILE__, (string)$response->getBody());
@@ -93,7 +80,7 @@ class ResponsesTest extends TestCase
     public function testAttachmentStreamable(): void
     {
         $response = $this->getWrapper()->attachment(
-            new Streamable(new Stream(fopen(__FILE__, 'r'), 'r')),
+            new Streamable(Stream::create(fopen(__FILE__, 'r'))),
             'file.php'
         );
 
@@ -113,7 +100,7 @@ class ResponsesTest extends TestCase
     public function testAttachmentStreamNoName(): void
     {
         $this->expectException(ResponseException::class);
-        $this->getWrapper()->attachment(new Stream(fopen(__FILE__, 'rb'), 'r'));
+        $this->getWrapper()->attachment(Stream::create(fopen(__FILE__, 'rb')));
     }
 
     public function testAttachmentException(): void

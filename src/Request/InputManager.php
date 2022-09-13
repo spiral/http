@@ -1,12 +1,5 @@
 <?php
 
-/**
- * Spiral Framework.
- *
- * @license   MIT
- * @author    Anton Titov (Wolfy-J)
- */
-
 declare(strict_types=1);
 
 namespace Spiral\Http\Request;
@@ -18,6 +11,7 @@ use Psr\Http\Message\UploadedFileInterface;
 use Psr\Http\Message\UriInterface;
 use Spiral\Core\Container\SingletonInterface;
 use Spiral\Core\Exception\ScopeException;
+use Spiral\Http\Config\HttpConfig;
 use Spiral\Http\Exception\InputException;
 use Spiral\Http\Header\AcceptHeader;
 
@@ -30,6 +24,12 @@ use Spiral\Http\Header\AcceptHeader;
  * Technically this class can be made as middleware, but due spiral provides container scoping
  * such functionality may be replaces with simple container request routing.
  *
+ * @psalm-type InputBagStructure = array{
+ *     "class": class-string<InputBag>,
+ *     "source": non-empty-string,
+ *     "alias": non-empty-string
+ * }
+ *
  * @property-read HeadersBag $headers
  * @property-read InputBag   $data
  * @property-read InputBag   $query
@@ -37,6 +37,15 @@ use Spiral\Http\Header\AcceptHeader;
  * @property-read FilesBag   $files
  * @property-read ServerBag  $server
  * @property-read InputBag   $attributes
+ *
+ * @method mixed header(string $name, mixed $default = null, bool|string $implode = ',')
+ * @method mixed data(string $name, mixed $default = null)
+ * @method mixed post(string $name, mixed $default = null)
+ * @method mixed query(string $name, mixed $default = null)
+ * @method mixed cookie(string $name, mixed $default = null)
+ * @method UploadedFileInterface|null file(string $name, mixed $default = null)
+ * @method mixed server(string $name, mixed $default = null)
+ * @method mixed attribute(string $name, mixed $default = null)
  */
 final class InputManager implements SingletonInterface
 {
@@ -44,16 +53,18 @@ final class InputManager implements SingletonInterface
      * Associations between bags and representing class/request method.
      *
      * @invisible
-     * @var array
+     * @var array<non-empty-string, InputBagStructure>
      */
-    protected $bagAssociations = [
+    protected array $bagAssociations = [
         'headers'    => [
             'class'  => HeadersBag::class,
             'source' => 'getHeaders',
+            'alias'  => 'header',
         ],
         'data'       => [
             'class'  => InputBag::class,
             'source' => 'getParsedBody',
+            'alias'  => 'post',
         ],
         'query'      => [
             'class'  => InputBag::class,
@@ -62,10 +73,12 @@ final class InputManager implements SingletonInterface
         'cookies'    => [
             'class'  => InputBag::class,
             'source' => 'getCookieParams',
+            'alias'  => 'cookie',
         ],
         'files'      => [
             'class'  => FilesBag::class,
             'source' => 'getUploadedFiles',
+            'alias'  => 'file',
         ],
         'server'     => [
             'class'  => ServerBag::class,
@@ -74,42 +87,38 @@ final class InputManager implements SingletonInterface
         'attributes' => [
             'class'  => InputBag::class,
             'source' => 'getAttributes',
+            'alias'  => 'attribute',
         ],
     ];
     /**
      * @invisible
-     * @var Request
      */
-    protected $request;
-
-    /**
-     * @invisible
-     * @var ContainerInterface
-     */
-    protected $container;
+    protected ?Request $request = null;
 
     /** @var InputBag[] */
-    private $bags = [];
+    private array $bags = [];
 
     /**
      * Prefix to add for each input request.
      *
      * @see self::withPrefix();
-     * @var string
      */
-    private $prefix = '';
+    private string $prefix = '';
 
     /**
      * List of content types that must be considered as JSON.
-     * @var array
      */
-    private $jsonTypes = [
+    private array $jsonTypes = [
         'application/json',
     ];
 
-    public function __construct(ContainerInterface $container)
-    {
-        $this->container = $container;
+    public function __construct(
+        /** @invisible */
+        private readonly ContainerInterface $container,
+        /** @invisible */
+        HttpConfig $config = new HttpConfig()
+    ) {
+        $this->bagAssociations = \array_merge($this->bagAssociations, $config->getInputBags());
     }
 
     public function __get(string $name): InputBag
@@ -125,6 +134,11 @@ final class InputManager implements SingletonInterface
         $this->bags = [];
     }
 
+    public function __call(string $name, array $arguments): mixed
+    {
+        return $this->bag($name)->get(...$arguments);
+    }
+
     /**
      * Creates new input slice associated with request sub-tree.
      */
@@ -134,7 +148,7 @@ final class InputManager implements SingletonInterface
 
         if ($add) {
             $input->prefix .= '.' . $prefix;
-            $input->prefix = trim($input->prefix, '.');
+            $input->prefix = \trim($input->prefix, '.');
         } else {
             $input->prefix = $prefix;
         }
@@ -149,15 +163,11 @@ final class InputManager implements SingletonInterface
     {
         $path = $this->uri()->getPath();
 
-        if (empty($path)) {
-            return '/';
-        }
-
-        if ($path[0] !== '/') {
-            return '/' . $path;
-        }
-
-        return $path;
+        return match (true) {
+            empty($path) => '/',
+            $path[0] !== '/' => '/' . $path,
+            default => $path
+        };
     }
 
     /**
@@ -170,7 +180,6 @@ final class InputManager implements SingletonInterface
 
     /**
      * Get active instance of ServerRequestInterface and reset all bags if instance changed.
-     *
      *
      * @throws ScopeException
      */
@@ -186,13 +195,33 @@ final class InputManager implements SingletonInterface
             );
         }
 
-        //Flushing input state
+        // Flushing input state
         if ($this->request !== $request) {
             $this->bags = [];
             $this->request = $request;
         }
 
-        return $this->request;
+        return $request;
+    }
+
+    /**
+     * Get the bearer token from the request headers.
+     */
+    public function bearerToken(): ?string
+    {
+        $header = $this->header('Authorization', '');
+
+        $position = \strrpos($header, 'Bearer ');
+
+        if ($position !== false) {
+            $header = \substr($header, $position + 7);
+
+            return \str_contains($header, ',')
+                ? \strstr($header, ',', true)
+                : $header;
+        }
+
+        return null;
     }
 
     /**
@@ -200,7 +229,7 @@ final class InputManager implements SingletonInterface
      */
     public function method(): string
     {
-        return strtoupper($this->request()->getMethod());
+        return \strtoupper($this->request()->getMethod());
     }
 
     /**
@@ -227,7 +256,7 @@ final class InputManager implements SingletonInterface
      */
     public function isXmlHttpRequest(): bool
     {
-        return mb_strtolower(
+        return \mb_strtolower(
             $this->request()->getHeaderLine('X-Requested-With')
         ) === 'xmlhttprequest';
     }
@@ -246,8 +275,8 @@ final class InputManager implements SingletonInterface
 
         if ($softMatch) {
             foreach ($acceptHeader->getAll() as $item) {
-                $itemValue = strtolower($item->getValue());
-                if (str_ends_with($itemValue, '/json') || str_ends_with($itemValue, '+json')) {
+                $itemValue = \strtolower($item->getValue());
+                if (\str_ends_with($itemValue, '/json') || \str_ends_with($itemValue, '+json')) {
                     return true;
                 }
             }
@@ -290,102 +319,53 @@ final class InputManager implements SingletonInterface
             return $this->bags[$name];
         }
 
-        if (!isset($this->bagAssociations[$name])) {
-            throw new InputException("Undefined input bag '{$name}'");
+        $definition = $this->findBagDefinition($name);
+        if (!$definition) {
+            throw new InputException(\sprintf("Undefined input bag '%s'", $name));
         }
 
-        $class = $this->bagAssociations[$name]['class'];
-        $data = call_user_func([$this->request(), $this->bagAssociations[$name]['source']]);
+        $class = $definition['class'];
+        $data = \call_user_func([$this->request(), $definition['source']]);
 
-        if (!is_array($data)) {
+        if (!\is_array($data)) {
             $data = (array)$data;
         }
 
         return $this->bags[$name] = new $class($data, $this->prefix);
     }
 
-    /**
-     * @param mixed       $default
-     * @param bool|string $implode Implode header lines, false to return header as array.
-     * @return mixed
-     */
-    public function header(string $name, $default = null, $implode = ',')
+    public function hasBag(string $name): bool
     {
-        return $this->headers->get($name, $default, $implode);
-    }
+        if (isset($this->bags[$name])) {
+            return true;
+        }
 
-    /**
-     * @param mixed  $default
-     * @return mixed
-     * @see data()
-     */
-    public function post(string $name, $default = null)
-    {
-        return $this->data($name, $default);
-    }
-
-    /**
-     * @param mixed  $default
-     * @return mixed
-     */
-    public function data(string $name, $default = null)
-    {
-        return $this->data->get($name, $default);
+        return \is_array($this->findBagDefinition($name));
     }
 
     /**
      * Reads data from data array, if not found query array will be used as fallback.
-     *
-     * @param mixed  $default
-     * @return mixed
      */
-    public function input(string $name, $default = null)
+    public function input(string $name, mixed $default = null): mixed
     {
-        return $this->data($name, $this->query($name, $default));
+        return $this->data($name, $this->query->get($name, $default));
     }
 
     /**
-     * @param mixed  $default
-     * @return mixed
+     * @return InputBagStructure|null
      */
-    public function query(string $name, $default = null)
+    private function findBagDefinition(string $name): ?array
     {
-        return $this->query->get($name, $default);
-    }
+        if (isset($this->bagAssociations[$name])) {
+            return $this->bagAssociations[$name];
+        }
 
-    /**
-     * @param mixed  $default
-     * @return mixed
-     */
-    public function cookie(string $name, $default = null)
-    {
-        return $this->cookies->get($name, $default);
-    }
+        foreach ($this->bagAssociations as $bag) {
+            if (isset($bag['alias']) && $bag['alias'] === $name) {
+                return $bag;
+            }
+        }
 
-    /**
-     * @param mixed  $default
-     *
-     */
-    public function file(string $name, $default = null): ?UploadedFileInterface
-    {
-        return $this->files->get($name, $default);
-    }
-
-    /**
-     * @param mixed  $default
-     * @return mixed
-     */
-    public function server(string $name, $default = null)
-    {
-        return $this->server->get($name, $default);
-    }
-
-    /**
-     * @param mixed  $default
-     * @return mixed
-     */
-    public function attribute(string $name, $default = null)
-    {
-        return $this->attributes->get($name, $default);
+        return null;
     }
 }

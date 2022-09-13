@@ -1,21 +1,16 @@
 <?php
 
-/**
- * Spiral Framework.
- *
- * @license   MIT
- * @author    Anton Titov (Wolfy-J)
- */
-
 declare(strict_types=1);
 
 namespace Spiral\Http;
 
+use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Spiral\Core\ScopeInterface;
+use Spiral\Http\Event\MiddlewareProcessing;
 use Spiral\Http\Exception\PipelineException;
 use Spiral\Http\Traits\MiddlewareTrait;
 
@@ -26,23 +21,17 @@ final class Pipeline implements RequestHandlerInterface, MiddlewareInterface
 {
     use MiddlewareTrait;
 
-    /** @var ScopeInterface */
-    private $scope;
+    private int $position = 0;
+    private ?RequestHandlerInterface $handler = null;
 
-    /** @var int */
-    private $position = 0;
-
-    /** @var RequestHandlerInterface */
-    private $handler;
-
-    public function __construct(ScopeInterface $scope)
-    {
-        $this->scope = $scope;
+    public function __construct(
+        private readonly ScopeInterface $scope,
+        private readonly ?EventDispatcherInterface $dispatcher = null
+    ) {
     }
 
     /**
      * Configures pipeline with target endpoint.
-     *
      *
      * @throws PipelineException
      */
@@ -55,30 +44,29 @@ final class Pipeline implements RequestHandlerInterface, MiddlewareInterface
         return $pipeline;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function process(Request $request, RequestHandlerInterface $handler): Response
     {
         return $this->withHandler($handler)->handle($request);
     }
 
-    /**
-     * @inheritdoc
-     */
     public function handle(Request $request): Response
     {
-        if (empty($this->handler)) {
+        if ($this->handler === null) {
             throw new PipelineException('Unable to run pipeline, no handler given.');
         }
 
         $position = $this->position++;
         if (isset($this->middleware[$position])) {
-            return $this->middleware[$position]->process($request, $this);
+            $middleware = $this->middleware[$position];
+            $this->dispatcher?->dispatch(new MiddlewareProcessing($request, $middleware));
+
+            return $middleware->process($request, $this);
         }
 
-        return $this->scope->runScope([Request::class => $request], function () use ($request) {
-            return $this->handler->handle($request);
-        });
+        $handler = $this->handler;
+        return $this->scope->runScope(
+            [Request::class => $request],
+            static fn (): Response => $handler->handle($request)
+        );
     }
 }

@@ -1,12 +1,5 @@
 <?php
 
-/**
- * Spiral Framework.
- *
- * @license   MIT
- * @author    Anton Titov (Wolfy-J)
- */
-
 declare(strict_types=1);
 
 namespace Spiral\Tests\Http;
@@ -76,7 +69,6 @@ class ExceptionsTest extends TestCase
         yield [new Exception\ClientException\UnauthorizedException('', new \Exception())];
         yield [new Exception\ClientException(0, '', new \Exception())];
         yield [new Exception\DotNotFoundException('', 0, new \Exception())];
-        yield [new Exception\EmitterException('', 0, new \Exception())];
         yield [new Exception\HttpException('', 0, new \Exception())];
         yield [new Exception\InputException('', 0, new \Exception())];
         yield [new Exception\PipelineException('', 0, new \Exception())];

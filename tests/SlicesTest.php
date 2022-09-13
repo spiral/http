@@ -1,12 +1,5 @@
 <?php
 
-/**
- * Spiral Framework.
- *
- * @license   MIT
- * @author    Anton Titov (Wolfy-J)
- */
-
 declare(strict_types=1);
 
 namespace Spiral\Tests\Http;
@@ -15,7 +8,7 @@ use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ServerRequestInterface;
 use Spiral\Core\Container;
 use Spiral\Http\Request\InputManager;
-use Laminas\Diactoros\ServerRequest;
+use Nyholm\Psr7\ServerRequest;
 
 class SlicesTest extends TestCase
 {
@@ -37,7 +30,7 @@ class SlicesTest extends TestCase
 
     public function testNoSlice(): void
     {
-        $this->container->bind(ServerRequestInterface::class, (new ServerRequest())->withParsedBody([
+        $this->container->bind(ServerRequestInterface::class, (new ServerRequest('GET', ''))->withParsedBody([
             'array' => [
                 'key' => 'value'
             ]
@@ -52,7 +45,7 @@ class SlicesTest extends TestCase
 
     public function testSlice(): void
     {
-        $this->container->bind(ServerRequestInterface::class, (new ServerRequest())->withParsedBody([
+        $this->container->bind(ServerRequestInterface::class, (new ServerRequest('GET', ''))->withParsedBody([
             'array' => [
                 'key' => 'value'
             ]
@@ -65,7 +58,7 @@ class SlicesTest extends TestCase
 
     public function testDeadEnd(): void
     {
-        $this->container->bind(ServerRequestInterface::class, (new ServerRequest())->withParsedBody([
+        $this->container->bind(ServerRequestInterface::class, (new ServerRequest('GET', ''))->withParsedBody([
             'array' => [
                 'key' => 'value'
             ]
@@ -76,7 +69,7 @@ class SlicesTest extends TestCase
 
     public function testMultiple(): void
     {
-        $this->container->bind(ServerRequestInterface::class, (new ServerRequest())->withParsedBody([
+        $this->container->bind(ServerRequestInterface::class, (new ServerRequest('GET', ''))->withParsedBody([
             'array' => [
                 'key' => [
                     'name' => 'value'

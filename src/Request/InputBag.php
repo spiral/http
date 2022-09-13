@@ -1,12 +1,5 @@
 <?php
 
-/**
- * Spiral Framework.
- *
- * @license   MIT
- * @author    Anton Titov (Wolfy-J)
- */
-
 declare(strict_types=1);
 
 namespace Spiral\Http\Request;
@@ -20,46 +13,31 @@ use Spiral\Http\Exception\InputException;
  */
 class InputBag implements \Countable, \IteratorAggregate, \ArrayAccess
 {
-    /** @var array */
-    private $data = [];
-
-    /** @var string */
-    private $prefix = '';
-
-    public function __construct(array $data, string $prefix = '')
-    {
-        $this->data = $data;
-        $this->prefix = $prefix;
+    public function __construct(
+        private readonly array $data,
+        private readonly int|string $prefix = ''
+    ) {
     }
 
-    /**
-     * @return array
-     */
-    public function __debugInfo()
+    public function __debugInfo(): array
     {
         return $this->all();
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function count(): int
     {
-        return count($this->all());
+        return \count($this->all());
     }
 
     public function all(): array
     {
         try {
             return $this->dotGet('');
-        } catch (DotNotFoundException $e) {
+        } catch (DotNotFoundException) {
             return [];
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getIterator(): \Traversable
     {
         return new \ArrayIterator($this->all());
@@ -69,108 +47,94 @@ class InputBag implements \Countable, \IteratorAggregate, \ArrayAccess
      * Fetch only specified keys from property values. Missed values can be filled with defined
      * filler. Only one variable layer can be fetched (no dot notation).
      *
-     * @param bool  $fill Fill missing key with filler value.
-     * @param mixed $filler
-     * @return array
+     * @param bool $fill Fill missing key with filler value.
      */
-    public function fetch(array $keys, bool $fill = false, $filler = null)
+    public function fetch(array $keys, bool $fill = false, mixed $filler = null): array
     {
-        $result = array_intersect_key($this->all(), array_flip($keys));
-        ;
+        $result = \array_intersect_key($this->all(), \array_flip($keys));
         if (!$fill) {
             return $result;
         }
 
-        return $result + array_fill_keys($keys, $filler);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function offsetExists($offset): bool
-    {
-        return $this->has($offset);
+        return $result + \array_fill_keys($keys, $filler);
     }
 
     /**
      * Check if field presented (can be empty) by it's name. Dot notation allowed.
      */
-    public function has(string $name): bool
+    public function has(int|string $name): bool
     {
         try {
             $this->dotGet($name);
-        } catch (DotNotFoundException $e) {
+        } catch (DotNotFoundException) {
             return false;
         }
 
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\ReturnTypeWillChange]
-    public function offsetGet($offset)
+    public function offsetExists(mixed $offset): bool
+    {
+        try {
+            return !\is_null($this->dotGet($offset));
+        } catch (DotNotFoundException) {
+            return false;
+        }
+    }
+
+    public function offsetGet(mixed $offset): mixed
     {
         return $this->get($offset);
     }
 
     /**
      * Get property or return default value. Dot notation allowed.
-     *
-     * @param mixed  $default
-     * @return mixed
      */
-    public function get(string $name, $default = null)
+    public function get(int|string $name, mixed $default = null): mixed
     {
         try {
             return $this->dotGet($name);
-        } catch (DotNotFoundException $e) {
+        } catch (DotNotFoundException) {
             return $default;
         }
     }
 
     /**
-     * {@inheritdoc}
-     *
      * @throws InputException
      */
-    public function offsetSet($offset, $value): void
+    public function offsetSet(mixed $offset, mixed $value): void
     {
-        throw new InputException('InputBag is immutable');
+        throw new InputException('InputBag is immutable.');
     }
 
     /**
-     * {@inheritdoc}
-     *
      * @throws InputException
      */
-    public function offsetUnset($offset): void
+    public function offsetUnset(mixed $offset): void
     {
-        throw new InputException('InputBag is immutable');
+        throw new InputException('InputBag is immutable.');
     }
 
     /**
      * Get element using dot notation.
      *
-     * @return mixed|null
      * @throws DotNotFoundException
      */
-    private function dotGet(string $name)
+    private function dotGet(int|string $name): mixed
     {
         $data = $this->data;
 
         //Generating path relative to a given name and prefix
-        $path = (!empty($this->prefix) ? $this->prefix . '.' : '') . $name;
+        $path = (empty($this->prefix) ? '' : $this->prefix . '.') . $name;
         if (empty($path)) {
             return $data;
         }
 
-        $path = explode('.', rtrim($path, '.'));
+        $path = \explode('.', \rtrim($path, '.'));
 
         foreach ($path as $step) {
-            if (!is_array($data) || !array_key_exists($step, $data)) {
-                throw new DotNotFoundException("Unable to find requested element '{$name}'");
+            if (!\is_array($data) || !\array_key_exists($step, $data)) {
+                throw new DotNotFoundException(\sprintf("Unable to find requested element '%s'.", $name));
             }
 
             $data = &$data[$step];
