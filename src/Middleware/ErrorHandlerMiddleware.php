@@ -77,7 +77,6 @@ final class ErrorHandlerMiddleware implements MiddlewareInterface
                 format: $format
             )
         );
-
         return $response;
     }
 
