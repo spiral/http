@@ -19,7 +19,7 @@ class ConfigTest extends TestCase
             'basePath' => '/'
         ]);
 
-        self::assertSame('/', $c->getBasePath());
+        $this->assertSame('/', $c->getBasePath());
     }
 
     public function testBaseHeaders(): void
@@ -30,7 +30,7 @@ class ConfigTest extends TestCase
             ]
         ]);
 
-        self::assertSame(['key' => 'value'], $c->getBaseHeaders());
+        $this->assertSame(['key' => 'value'], $c->getBaseHeaders());
     }
 
     public function testBaseMiddleware(): void
@@ -39,6 +39,6 @@ class ConfigTest extends TestCase
             'middleware' => [TestMiddleware::class]
         ]);
 
-        self::assertSame([TestMiddleware::class], $c->getMiddleware());
+        $this->assertSame([TestMiddleware::class], $c->getMiddleware());
     }
 }

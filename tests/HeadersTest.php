@@ -12,9 +12,15 @@ use Nyholm\Psr7\ServerRequest;
 
 class HeadersTest extends TestCase
 {
-    private Container $container;
+    /**
+     * @var Container
+     */
+    private $container;
 
-    private InputManager $input;
+    /**
+     * @var InputManager
+     */
+    private $input;
 
     public function setUp(): void
     {
@@ -29,7 +35,7 @@ class HeadersTest extends TestCase
         $request = $request->withAddedHeader('Path', 'value');
         $this->container->bind(ServerRequestInterface::class, $request);
 
-        self::assertSame('value', $this->input->header('path'));
+        $this->assertSame('value', $this->input->header('path'));
     }
 
     public function testHas(): void
@@ -39,8 +45,8 @@ class HeadersTest extends TestCase
         $request = $request->withAddedHeader('Path', 'value');
         $this->container->bind(ServerRequestInterface::class, $request);
 
-        self::assertTrue($this->input->headers->has('path'));
-        self::assertTrue($this->input->headers->has('Path'));
+        $this->assertTrue($this->input->headers->has('path'));
+        $this->assertTrue($this->input->headers->has('Path'));
     }
 
     public function testFetch(): void
@@ -51,7 +57,7 @@ class HeadersTest extends TestCase
         $request = $request->withAddedHeader('Path', 'value2');
         $this->container->bind(ServerRequestInterface::class, $request);
 
-        self::assertSame([
+        $this->assertSame([
             'Path' => 'value,value2'
         ], $this->input->headers->fetch(['path']));
     }
@@ -64,10 +70,13 @@ class HeadersTest extends TestCase
         $request = $request->withAddedHeader('Path', 'value2');
         $this->container->bind(ServerRequestInterface::class, $request);
 
-        self::assertSame([
+        $this->assertSame([
             'Path' => ['value', 'value2']
         ], $this->input->headers->fetch(['path'], false, true, null));
 
-        self::assertSame(['value', 'value2'], $this->input->headers->get('path', null, false));
+        $this->assertSame(
+            ['value', 'value2'],
+            $this->input->headers->get('path', null, false)
+        );
     }
 }

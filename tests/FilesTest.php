@@ -14,9 +14,15 @@ use Nyholm\Psr7\UploadedFile;
 
 class FilesTest extends TestCase
 {
-    private Container $container;
+    /**
+     * @var Container
+     */
+    private $container;
 
-    private InputManager $input;
+    /**
+     * @var InputManager
+     */
+    private $input;
 
     public function setUp(): void
     {
@@ -38,8 +44,8 @@ class FilesTest extends TestCase
 
         $this->container->bind(ServerRequestInterface::class, $request);
 
-        self::assertInstanceOf(UploadedFileInterface::class, $this->input->file('file'));
-        self::assertNull($this->input->file('other'));
+        $this->assertInstanceOf(UploadedFileInterface::class, $this->input->file('file'));
+        $this->assertSame(null, $this->input->file('other'));
     }
 
     public function testGetFilename(): void
@@ -58,9 +64,9 @@ class FilesTest extends TestCase
 
 
         $filename = $this->input->files->getFilename('file');
-        self::assertFileExists($filename);
+        $this->assertTrue(file_exists($filename));
 
-        self::assertSame(file_get_contents(__FILE__), file_get_contents($filename));
+        $this->assertSame(file_get_contents(__FILE__), file_get_contents($filename));
     }
 
 
@@ -79,6 +85,6 @@ class FilesTest extends TestCase
         $this->container->bind(ServerRequestInterface::class, $request);
 
         $filename = $this->input->files->getFilename('file2');
-        self::assertNull($filename);
+        $this->assertNull($filename);
     }
 }

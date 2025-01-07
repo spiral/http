@@ -12,9 +12,15 @@ use Nyholm\Psr7\ServerRequest;
 
 class SlicesTest extends TestCase
 {
-    private Container $container;
+    /**
+     * @var Container
+     */
+    private $container;
 
-    private InputManager $input;
+    /**
+     * @var InputManager
+     */
+    private $input;
 
     public function setUp(): void
     {
@@ -30,7 +36,7 @@ class SlicesTest extends TestCase
             ]
         ]));
 
-        self::assertSame([
+        $this->assertSame([
             'array' => [
                 'key' => 'value'
             ]
@@ -45,7 +51,7 @@ class SlicesTest extends TestCase
             ]
         ]));
 
-        self::assertSame([
+        $this->assertSame([
             'key' => 'value'
         ], $this->input->withPrefix('array')->data->all());
     }
@@ -58,7 +64,7 @@ class SlicesTest extends TestCase
             ]
         ]));
 
-        self::assertSame([], $this->input->withPrefix('other')->data->all());
+        $this->assertSame([], $this->input->withPrefix('other')->data->all());
     }
 
     public function testMultiple(): void
@@ -71,13 +77,13 @@ class SlicesTest extends TestCase
             ]
         ]));
 
-        self::assertSame([
+        $this->assertSame([
             'name' => 'value'
         ], $this->input->withPrefix('array.key')->data->all());
 
         $input = $this->input->withPrefix('array');
 
-        self::assertSame([
+        $this->assertSame([
             'key' => [
                 'name' => 'value'
             ]
@@ -85,13 +91,13 @@ class SlicesTest extends TestCase
 
         $input = $input->withPrefix('key');
 
-        self::assertSame([
+        $this->assertSame([
             'name' => 'value'
         ], $input->data->all());
 
         $input = $input->withPrefix('', false);
 
-        self::assertSame([
+        $this->assertSame([
             'array' => [
                 'key' => [
                     'name' => 'value'
@@ -99,7 +105,7 @@ class SlicesTest extends TestCase
             ]
         ], $input->data->all());
 
-        self::assertSame('value', $input->data('array.key.name'));
-        self::assertSame('value', $input->post('array.key.name'));
+        $this->assertSame('value', $input->data('array.key.name'));
+        $this->assertSame('value', $input->post('array.key.name'));
     }
 }

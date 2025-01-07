@@ -18,14 +18,14 @@ final class GeneratorStreamTest extends TestCase
     {
         $stream = $this->createStream();
 
-        self::assertNull($stream->getSize());
+        $this->assertNull($stream->getSize());
     }
 
     public function testIsSeekable(): void
     {
         $stream = $this->createStream();
 
-        self::assertFalse($stream->isSeekable());
+        $this->assertFalse($stream->isSeekable());
     }
 
     public function testSeek(): void
@@ -43,7 +43,7 @@ final class GeneratorStreamTest extends TestCase
 
         $stream->rewind();
 
-        self::assertSame(0, $stream->tell());
+        $this->assertSame(0, $stream->tell());
     }
 
     public function testRewindAfterRead(): void
@@ -61,7 +61,7 @@ final class GeneratorStreamTest extends TestCase
     {
         $stream = $this->createStream();
 
-        self::assertFalse($stream->isWritable());
+        $this->assertFalse($stream->isWritable());
     }
 
     public function testWrite(): void
@@ -80,8 +80,8 @@ final class GeneratorStreamTest extends TestCase
         $result1 = $stream->read(4);
         $result2 = $stream->read(4);
 
-        self::assertSame('0', $result1);
-        self::assertSame('foo', $result2);
+        $this->assertSame('0', $result1);
+        $this->assertSame('foo', $result2);
     }
 
     public function testReadWithReturnOnly(): void
@@ -91,7 +91,7 @@ final class GeneratorStreamTest extends TestCase
 
         $result = $stream->read(12);
 
-        self::assertSame($rValue, $result);
+        $this->assertSame($rValue, $result);
     }
 
     public function testToStringWithReturn(): void
@@ -101,7 +101,7 @@ final class GeneratorStreamTest extends TestCase
 
         $result = (string) $stream;
 
-        self::assertSame(self::DEFAULT_CONTENT_RESULT . $rValue, $result);
+        $this->assertSame(self::DEFAULT_CONTENT_RESULT . $rValue, $result);
     }
 
     public function testToStringWithReturnOnly(): void
@@ -111,7 +111,7 @@ final class GeneratorStreamTest extends TestCase
 
         $result = (string) $stream;
 
-        self::assertSame($rValue, $result);
+        $this->assertSame($rValue, $result);
     }
 
     public function testUnableReadStream(): void
@@ -119,7 +119,7 @@ final class GeneratorStreamTest extends TestCase
         $stream = $this->createStream();
         $stream->close();
 
-        self::assertSame('', (string) $stream);
+        $this->assertSame('', (string) $stream);
 
         $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('Unable to read stream contents.');
@@ -137,38 +137,38 @@ final class GeneratorStreamTest extends TestCase
 
         $stream->read(1);
 
-        self::assertFalse($stream->isReadable());
-        self::assertNull($stream->getSize());
-        self::assertSame(0, $stream->tell());
+        $this->assertFalse($stream->isReadable());
+        $this->assertNull($stream->getSize());
+        $this->assertSame(0, $stream->tell());
     }
 
     public function testEof(): void
     {
         $stream = $this->createStream();
 
-        self::assertFalse($stream->eof());
+        $this->assertFalse($stream->eof());
 
         $stream->close();
 
-        self::assertTrue($stream->eof());
+        $this->assertTrue($stream->eof());
     }
 
     public function testIsReadable(): void
     {
         $stream = $this->createStream();
 
-        self::assertTrue($stream->isReadable());
+        $this->assertTrue($stream->isReadable());
 
         $stream->close();
 
-        self::assertFalse($stream->isReadable());
+        $this->assertFalse($stream->isReadable());
     }
 
     public function testGetMetadata(): void
     {
         $stream = $this->createStream();
 
-        self::assertSame(['seekable' => false, 'eof' => false], $stream->getMetadata());
+        $this->assertSame(['seekable' => false, 'eof' => false], $stream->getMetadata());
     }
 
     private function createStream(iterable $sequence = self::DEFAULT_SEQUENCE, $return = null): GeneratorStream

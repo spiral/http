@@ -28,26 +28,26 @@ final class PipelineTest extends TestCase
     {
         $pipeline = new Pipeline($this->container);
 
-        $handler = new CallableHandler(fn(): string => 'response', new ResponseFactory(new HttpConfig(['headers' => []])));
+        $handler = new CallableHandler(fn() => 'response', new ResponseFactory(new HttpConfig(['headers' => []])));
 
         $response = $pipeline->withHandler($handler)->handle(new ServerRequest('GET', ''));
 
-        self::assertSame(200, $response->getStatusCode());
-        self::assertSame('OK', $response->getReasonPhrase());
-        self::assertSame('response', (string)$response->getBody());
+        $this->assertSame(200, $response->getStatusCode());
+        $this->assertSame('OK', $response->getReasonPhrase());
+        $this->assertSame('response', (string)$response->getBody());
     }
 
     public function testHandle(): void
     {
         $pipeline = new Pipeline($this->container);
 
-        $handler = new CallableHandler(fn(): string => 'response', new ResponseFactory(new HttpConfig(['headers' => []])));
+        $handler = new CallableHandler(fn() => 'response', new ResponseFactory(new HttpConfig(['headers' => []])));
 
         $response = $pipeline->process(new ServerRequest('GET', ''), $handler);
 
-        self::assertSame(200, $response->getStatusCode());
-        self::assertSame('OK', $response->getReasonPhrase());
-        self::assertSame('response', (string)$response->getBody());
+        $this->assertSame(200, $response->getStatusCode());
+        $this->assertSame('OK', $response->getReasonPhrase());
+        $this->assertSame('response', (string)$response->getBody());
     }
 
     public function testHandleException(): void
@@ -67,7 +67,7 @@ final class PipelineTest extends TestCase
             }
         };
         $request = new ServerRequest('GET', '');
-        $handler = new CallableHandler(fn(): string => 'response', new ResponseFactory(new HttpConfig(['headers' => []])));
+        $handler = new CallableHandler(fn() => 'response', new ResponseFactory(new HttpConfig(['headers' => []])));
 
         $dispatcher = $this->createMock(EventDispatcherInterface::class);
         $dispatcher
@@ -87,7 +87,7 @@ final class PipelineTest extends TestCase
         $this->container->getBinder('http')
             ->bindSingleton(CurrentRequest::class, new CurrentRequest());
         $this->container->getBinder('http')
-            ->bind(ServerRequestInterface::class, static fn(CurrentRequest $cr): ?ServerRequestInterface => $cr->get());
+            ->bind(ServerRequestInterface::class, static fn(CurrentRequest $cr) => $cr->get());
 
         $middleware = new class implements MiddlewareInterface {
             public function process(
@@ -107,9 +107,9 @@ final class PipelineTest extends TestCase
 
         $this->container->runScope(
             new \Spiral\Core\Scope(name: 'http'),
-            function (ScopeInterface $c) use ($middleware): void {
+            function (ScopeInterface $c) use ($middleware) {
                 $request = new ServerRequest('GET', '');
-                $handler = new CallableHandler(fn(): string => 'response', new ResponseFactory(new HttpConfig(['headers' => []])));
+                $handler = new CallableHandler(fn() => 'response', new ResponseFactory(new HttpConfig(['headers' => []])));
 
                 $pipeline = new Pipeline($c, null, new NullTracer($c));
 
