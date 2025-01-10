@@ -12,15 +12,9 @@ use Nyholm\Psr7\ServerRequest;
 
 class HeadersTest extends TestCase
 {
-    /**
-     * @var Container
-     */
-    private $container;
+    private Container $container;
 
-    /**
-     * @var InputManager
-     */
-    private $input;
+    private InputManager $input;
 
     public function setUp(): void
     {
@@ -35,7 +29,7 @@ class HeadersTest extends TestCase
         $request = $request->withAddedHeader('Path', 'value');
         $this->container->bind(ServerRequestInterface::class, $request);
 
-        $this->assertSame('value', $this->input->header('path'));
+        self::assertSame('value', $this->input->header('path'));
     }
 
     public function testHas(): void
@@ -45,8 +39,8 @@ class HeadersTest extends TestCase
         $request = $request->withAddedHeader('Path', 'value');
         $this->container->bind(ServerRequestInterface::class, $request);
 
-        $this->assertTrue($this->input->headers->has('path'));
-        $this->assertTrue($this->input->headers->has('Path'));
+        self::assertTrue($this->input->headers->has('path'));
+        self::assertTrue($this->input->headers->has('Path'));
     }
 
     public function testFetch(): void
@@ -57,7 +51,7 @@ class HeadersTest extends TestCase
         $request = $request->withAddedHeader('Path', 'value2');
         $this->container->bind(ServerRequestInterface::class, $request);
 
-        $this->assertSame([
+        self::assertSame([
             'Path' => 'value,value2'
         ], $this->input->headers->fetch(['path']));
     }
@@ -70,13 +64,10 @@ class HeadersTest extends TestCase
         $request = $request->withAddedHeader('Path', 'value2');
         $this->container->bind(ServerRequestInterface::class, $request);
 
-        $this->assertSame([
+        self::assertSame([
             'Path' => ['value', 'value2']
         ], $this->input->headers->fetch(['path'], false, true, null));
 
-        $this->assertSame(
-            ['value', 'value2'],
-            $this->input->headers->get('path', null, false)
-        );
+        self::assertSame(['value', 'value2'], $this->input->headers->get('path', null, false));
     }
 }
