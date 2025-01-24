@@ -25,24 +25,35 @@ final class Http implements RequestHandlerInterface
 {
     private ?RequestHandlerInterface $handler = null;
     private readonly TracerFactoryInterface $tracerFactory;
+    private readonly Pipeline|LazyPipeline $pipeline;
 
     public function __construct(
         private readonly HttpConfig $config,
-        private readonly Pipeline $pipeline,
+        Pipeline|LazyPipeline $pipeline,
         private readonly ResponseFactoryInterface $responseFactory,
         private readonly ContainerInterface $container,
         ?TracerFactoryInterface $tracerFactory = null,
         private readonly ?EventDispatcherInterface $dispatcher = null,
     ) {
-        foreach ($this->config->getMiddleware() as $middleware) {
-            $this->pipeline->pushMiddleware($this->container->get($middleware));
+        if ($pipeline instanceof Pipeline) {
+            foreach ($this->config->getMiddleware() as $middleware) {
+                $pipeline->pushMiddleware($this->container->get($middleware));
+            }
+        } else {
+            $pipeline = $pipeline->withAddedMiddleware(
+                ...$this->config->getMiddleware(),
+            );
         }
 
+        $this->pipeline = $pipeline;
         $scope = $this->container instanceof ScopeInterface ? $this->container : new Container();
         $this->tracerFactory = $tracerFactory ?? new NullTracerFactory($scope);
     }
 
-    public function getPipeline(): Pipeline
+    /**
+     * @internal
+     */
+    public function getPipeline(): Pipeline|LazyPipeline
     {
         return $this->pipeline;
     }
@@ -75,11 +86,11 @@ final class Http implements RequestHandlerInterface
             $span
                 ->setAttribute(
                     'http.status_code',
-                    $response->getStatusCode()
+                    $response->getStatusCode(),
                 )
                 ->setAttribute(
                     'http.response_content_length',
-                    $response->getHeaderLine('Content-Length') ?: $response->getBody()->getSize()
+                    $response->getHeaderLine('Content-Length') ?: $response->getBody()->getSize(),
                 )
                 ->setStatus($response->getStatusCode() < 500 ? 'OK' : 'ERROR');
 
@@ -92,12 +103,15 @@ final class Http implements RequestHandlerInterface
 
         /** @var ResponseInterface $response */
         $response = $tracer->trace(
-            name: \sprintf('%s %s', $request->getMethod(), (string)$request->getUri()),
+            name: \sprintf('%s %s', $request->getMethod(), (string) $request->getUri()),
             callback: $callback,
             attributes: [
                 'http.method' => $request->getMethod(),
                 'http.url' => (string) $request->getUri(),
-                'http.headers' => $request->getHeaders(),
+                'http.headers' => \array_map(
+                    static fn(array $values): string => \implode(',', $values),
+                    $request->getHeaders(),
+                ),
             ],
             scoped: true,
             traceKind: TraceKind::SERVER,

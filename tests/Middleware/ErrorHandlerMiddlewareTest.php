@@ -29,13 +29,12 @@ final class ErrorHandlerMiddlewareTest extends TestCase
     private LoggerInterface $logger;
     private RendererInterface $renderer;
 
-    protected function setUp(): void
+    public static function exceptionsDataProvider(): \Traversable
     {
-        $this->request = new ServerRequest('GET', '/');
-        $this->logger = $this->createMock(LoggerInterface::class);
-        $this->handler = $this->createMock(RequestHandlerInterface::class);
-        $this->exceptionHandler = $this->createMock(ExceptionHandlerInterface::class);
-        $this->renderer = $this->createMock(RendererInterface::class);
+        yield [new ClientException(message: 'some error'), 400];
+        yield [new RouterException(message: 'some error'), 404];
+        yield [new \Error('some error', 555), 500];
+        yield [new \Error('some error'), 500];
     }
 
     #[DataProvider('exceptionsDataProvider')]
@@ -70,7 +69,7 @@ final class ErrorHandlerMiddlewareTest extends TestCase
             $this->renderer,
             new Psr17Factory(),
             $this->exceptionHandler,
-            Verbosity::BASIC
+            Verbosity::BASIC,
         );
         $middleware->setLogger($this->logger);
 
@@ -115,13 +114,13 @@ final class ErrorHandlerMiddlewareTest extends TestCase
             $this->renderer,
             new Psr17Factory(),
             $this->exceptionHandler,
-            Verbosity::DEBUG
+            Verbosity::DEBUG,
         );
         $middleware->setLogger($this->logger);
 
         $response = $middleware->process($this->request, $this->handler);
 
-        $this->assertSame($code, $response->getStatusCode());
+        self::assertSame($code, $response->getStatusCode());
     }
 
     #[DataProvider('exceptionsDataProvider')]
@@ -161,20 +160,21 @@ final class ErrorHandlerMiddlewareTest extends TestCase
             new EnvSuppressErrors(DebugMode::Enabled),
             $this->renderer,
             new Psr17Factory(),
-            $this->exceptionHandler
+            $this->exceptionHandler,
         );
         $middleware->setLogger($this->logger);
 
         $response = $middleware->process($this->request, $this->handler);
 
-        $this->assertSame($code, $response->getStatusCode());
+        self::assertSame($code, $response->getStatusCode());
     }
 
-    public static function exceptionsDataProvider(): \Traversable
+    protected function setUp(): void
     {
-        yield [new ClientException(message: 'some error'), 400];
-        yield [new RouterException(message: 'some error'), 404];
-        yield [new \Error('some error', 555), 500];
-        yield [new \Error('some error'), 500];
+        $this->request = new ServerRequest('GET', '/');
+        $this->logger = $this->createMock(LoggerInterface::class);
+        $this->handler = $this->createMock(RequestHandlerInterface::class);
+        $this->exceptionHandler = $this->createMock(ExceptionHandlerInterface::class);
+        $this->renderer = $this->createMock(RendererInterface::class);
     }
 }

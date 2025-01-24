@@ -21,6 +21,7 @@ use Spiral\Telemetry\TracerInterface;
 
 /**
  * Pipeline used to pass request and response thought the chain of middleware.
+ * @deprecated Will be removed in v4.0. Use {@see LazyPipeline} instead.
  */
 final class Pipeline implements RequestHandlerInterface, MiddlewareInterface
 {
@@ -31,9 +32,9 @@ final class Pipeline implements RequestHandlerInterface, MiddlewareInterface
     private ?RequestHandlerInterface $handler = null;
 
     public function __construct(
-        #[Proxy] private readonly ScopeInterface $scope,
+        #[Proxy] ScopeInterface $scope,
         private readonly ?EventDispatcherInterface $dispatcher = null,
-        ?TracerInterface $tracer = null
+        ?TracerInterface $tracer = null,
     ) {
         $this->tracer = $tracer ?? new NullTracer($scope);
     }
@@ -84,11 +85,11 @@ final class Pipeline implements RequestHandlerInterface, MiddlewareInterface
                 $span
                     ->setAttribute(
                         'http.status_code',
-                        $response->getStatusCode()
+                        $response->getStatusCode(),
                     )
                     ->setAttribute(
                         'http.response_content_length',
-                        $response->getHeaderLine('Content-Length') ?: $response->getBody()->getSize()
+                        $response->getHeaderLine('Content-Length') ?: $response->getBody()->getSize(),
                     )
                     ->setStatus($response->getStatusCode() < 500 ? 'OK' : 'ERROR');
 
@@ -101,7 +102,7 @@ final class Pipeline implements RequestHandlerInterface, MiddlewareInterface
                 attributes: [
                     'http.middleware' => $middleware::class,
                 ],
-                scoped: true
+                scoped: true,
             );
         } finally {
             if ($previousRequest !== null) {
