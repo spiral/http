@@ -9,16 +9,8 @@ use Spiral\Streams\StreamableInterface;
 
 class Streamable implements StreamableInterface
 {
-    private $stream;
+    public function __construct(private readonly StreamInterface $stream) {}
 
-    public function __construct(StreamInterface $stream)
-    {
-        $this->stream = $stream;
-    }
-
-    /**
-     * @return StreamInterface
-     */
     public function getStream(): StreamInterface
     {
         return $this->stream;

@@ -6,12 +6,7 @@ namespace Spiral\Tests\Http;
 
 class Json implements \JsonSerializable
 {
-    private $data;
-
-    public function __construct($data)
-    {
-        $this->data = $data;
-    }
+    public function __construct(private $data) {}
 
     #[\ReturnTypeWillChange]
     public function jsonSerialize()

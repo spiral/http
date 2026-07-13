@@ -9,6 +9,8 @@ use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
+use Spiral\Core\Attribute\Proxy;
+use Spiral\Core\ContainerScope;
 use Spiral\Core\ScopeInterface;
 use Spiral\Http\Event\MiddlewareProcessing;
 use Spiral\Http\Exception\PipelineException;
@@ -19,6 +21,7 @@ use Spiral\Telemetry\TracerInterface;
 
 /**
  * Pipeline used to pass request and response thought the chain of middleware.
+ * @deprecated Will be removed in v4.0. Use {@see LazyPipeline} instead.
  */
 final class Pipeline implements RequestHandlerInterface, MiddlewareInterface
 {
@@ -29,9 +32,9 @@ final class Pipeline implements RequestHandlerInterface, MiddlewareInterface
     private ?RequestHandlerInterface $handler = null;
 
     public function __construct(
-        private readonly ScopeInterface $scope,
+        #[Proxy] ScopeInterface $scope,
         private readonly ?EventDispatcherInterface $dispatcher = null,
-        ?TracerInterface $tracer = null
+        ?TracerInterface $tracer = null,
     ) {
         $this->tracer = $tracer ?? new NullTracer($scope);
     }
@@ -61,40 +64,50 @@ final class Pipeline implements RequestHandlerInterface, MiddlewareInterface
             throw new PipelineException('Unable to run pipeline, no handler given.');
         }
 
-        $position = $this->position++;
-        if (isset($this->middleware[$position])) {
+        // todo: find a better solution in the Spiral v4.0
+        /** @var CurrentRequest|null $currentRequest */
+        $currentRequest = ContainerScope::getContainer()?->get(CurrentRequest::class);
+
+        $previousRequest = $currentRequest?->get();
+        $currentRequest?->set($request);
+        try {
+            $position = $this->position++;
+            if (!isset($this->middleware[$position])) {
+                return $this->handler->handle($request);
+            }
+
             $middleware = $this->middleware[$position];
             $this->dispatcher?->dispatch(new MiddlewareProcessing($request, $middleware));
 
+            $callback = function (SpanInterface $span) use ($request, $middleware): Response {
+                $response = $middleware->process($request, $this);
+
+                $span
+                    ->setAttribute(
+                        'http.status_code',
+                        $response->getStatusCode(),
+                    )
+                    ->setAttribute(
+                        'http.response_content_length',
+                        $response->getHeaderLine('Content-Length') ?: $response->getBody()->getSize(),
+                    )
+                    ->setStatus($response->getStatusCode() < 500 ? 'OK' : 'ERROR');
+
+                return $response;
+            };
+
             return $this->tracer->trace(
                 name: \sprintf('Middleware processing [%s]', $middleware::class),
-                callback: function (SpanInterface $span) use ($request, $middleware): Response {
-                    $response = $middleware->process($request, $this);
-
-                    $span
-                        ->setAttribute(
-                            'http.status_code',
-                            $response->getStatusCode()
-                        )
-                        ->setAttribute(
-                            'http.response_content_length',
-                            $response->getHeaderLine('Content-Length') ?: $response->getBody()->getSize()
-                        )
-                        ->setStatus($response->getStatusCode() < 500 ? 'OK' : 'ERROR');
-
-                    return $response;
-                },
-                scoped: true,
+                callback: $callback,
                 attributes: [
                     'http.middleware' => $middleware::class,
-                ]
+                ],
+                scoped: true,
             );
+        } finally {
+            if ($previousRequest !== null) {
+                $currentRequest?->set($previousRequest);
+            }
         }
-
-        $handler = $this->handler;
-        return $this->scope->runScope(
-            [Request::class => $request],
-            static fn (): Response => $handler->handle($request)
-        );
     }
 }
