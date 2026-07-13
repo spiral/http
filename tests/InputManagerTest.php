@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Spiral\Tests\Http;
+namespace Spiral\Tests\Http\Request;
 
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
@@ -18,25 +18,15 @@ use Spiral\Http\Request\InputManager;
 use Spiral\Http\Request\ServerBag;
 use Nyholm\Psr7\ServerRequest;
 
-final class InputManagerTest extends TestCase
+class InputManagerTest extends TestCase
 {
     private Container $container;
     private InputManager $input;
 
-    public static function isJsonExpectedProvider(): \Traversable
+    public function setUp(): void
     {
-        yield [false, null];
-        yield [false, 'text/html'];
-        yield [true, 'application/json'];
-        yield [true, 'application/vnd.api+json'];
-    }
-
-    public static function isJsonExpectedOnSoftMatchProvider(): \Traversable
-    {
-        yield [false, null];
-        yield [false, 'text/html'];
-        yield [true, 'text/json'];
-        yield [true, 'application/vnd.api+json'];
+        $this->container = new Container();
+        $this->input = new InputManager($this->container);
     }
 
     public function testCreateOutsideOfScope(): void
@@ -49,17 +39,17 @@ final class InputManagerTest extends TestCase
     {
         $this->container->bind(ServerRequestInterface::class, new ServerRequest('GET', ''));
 
-        self::assertNotNull($this->input->request());
-        self::assertSame($this->input->request(), $this->input->request());
+        $this->assertNotNull($this->input->request());
+        $this->assertSame($this->input->request(), $this->input->request());
     }
 
     public function testChangeRequest(): void
     {
         $this->container->bind(ServerRequestInterface::class, new ServerRequest('GET', '/hello'));
-        self::assertSame('/hello', $this->input->path());
+        $this->assertSame('/hello', $this->input->path());
 
         $this->container->bind(ServerRequestInterface::class, new ServerRequest('GET', '/other'));
-        self::assertSame('/other', $this->input->path());
+        $this->assertSame('/other', $this->input->path());
     }
 
     public function testUri(): void
@@ -67,23 +57,23 @@ final class InputManagerTest extends TestCase
         $request = new ServerRequest('GET', 'http://domain.com/hello-world');
         $this->container->bind(ServerRequestInterface::class, $request);
 
-        self::assertSame('/hello-world', $this->input->path());
+        $this->assertSame('/hello-world', $this->input->path());
 
         $request = new ServerRequest('GET', 'http://domain.com/new-one');
         $this->container->bind(ServerRequestInterface::class, $request);
 
-        self::assertSame('/new-one', $this->input->path());
+        $this->assertSame('/new-one', $this->input->path());
 
         $request = new ServerRequest('GET', '');
         $this->container->bind(ServerRequestInterface::class, $request);
 
-        self::assertSame('/', $this->input->path());
+        $this->assertSame('/', $this->input->path());
 
 
         $request = new ServerRequest('GET', 'hello');
         $this->container->bind(ServerRequestInterface::class, $request);
 
-        self::assertSame('/hello', $this->input->path());
+        $this->assertSame('/hello', $this->input->path());
     }
 
     public function testMethod(): void
@@ -91,18 +81,18 @@ final class InputManagerTest extends TestCase
         $request = new ServerRequest('GET', 'http://domain.com/hello-world');
         $this->container->bind(ServerRequestInterface::class, $request);
 
-        self::assertSame('GET', $this->input->method());
+        $this->assertSame('GET', $this->input->method());
 
         $request = new ServerRequest('POST', 'http://domain.com/hello-world');
         $this->container->bind(ServerRequestInterface::class, $request);
 
-        self::assertSame('POST', $this->input->method());
+        $this->assertSame('POST', $this->input->method());
 
         //case fixing
         $request = new ServerRequest('put', 'http://domain.com/hello-world');
         $this->container->bind(ServerRequestInterface::class, $request);
 
-        self::assertSame('PUT', $this->input->method());
+        $this->assertSame('PUT', $this->input->method());
     }
 
     public function testIsSecure(): void
@@ -110,12 +100,12 @@ final class InputManagerTest extends TestCase
         $request = new ServerRequest('GET', 'http://domain.com/hello-world');
         $this->container->bind(ServerRequestInterface::class, $request);
 
-        self::assertFalse($this->input->isSecure());
+        $this->assertFalse($this->input->isSecure());
 
         $request = new ServerRequest('POST', 'https://domain.com/hello-world');
         $this->container->bind(ServerRequestInterface::class, $request);
 
-        self::assertTrue($this->input->isSecure());
+        $this->assertTrue($this->input->isSecure());
     }
 
     public function testBearerToken(): void
@@ -123,22 +113,22 @@ final class InputManagerTest extends TestCase
         $request = new ServerRequest('GET', 'http://domain.com/hello-world');
         $this->container->bind(ServerRequestInterface::class, $request);
 
-        self::assertNull($this->input->bearerToken());
+        $this->assertNull($this->input->bearerToken());
 
         $request = new ServerRequest(method: 'GET', uri: 'http://domain.com/hello-world', headers: [
-            'Authorization' => 'Bearer some-token',
+            'Authorization' => 'Bearer some-token'
         ]);
 
         $this->container->bind(ServerRequestInterface::class, $request);
-        self::assertSame('some-token', $this->input->bearerToken());
+        $this->assertSame('some-token', $this->input->bearerToken());
 
         // Case with coma separated header values
         $request = new ServerRequest(method: 'GET', uri: 'http://domain.com/hello-world', headers: [
-            'Authorization' => 'Bearer some-token',
+            'Authorization' => 'Bearer some-token'
         ]);
 
         $this->container->bind(ServerRequestInterface::class, $request->withAddedHeader('Authorization', 'baz'));
-        self::assertSame('some-token', $this->input->bearerToken());
+        $this->assertSame('some-token', $this->input->bearerToken());
     }
 
     public function testIsAjax(): void
@@ -146,17 +136,17 @@ final class InputManagerTest extends TestCase
         $request = new ServerRequest('GET', 'http://domain.com/hello-world', body: 'php://input');
         $this->container->bind(ServerRequestInterface::class, $request);
 
-        self::assertFalse($this->input->isAjax());
+        $this->assertFalse($this->input->isAjax());
 
         $request = new ServerRequest(
             'GET',
             'http://domain.com/hello-world',
             ['X-Requested-With' => 'xmlhttprequest'],
-            'php://input',
+            'php://input'
         );
         $this->container->bind(ServerRequestInterface::class, $request);
 
-        self::assertTrue($this->input->isAjax());
+        $this->assertTrue($this->input->isAjax());
     }
 
     public function testIsXmlHttpRequest(): void
@@ -164,7 +154,7 @@ final class InputManagerTest extends TestCase
         $request = new ServerRequest('GET', 'http://domain.com/hello-world');
         $this->container->bind(ServerRequestInterface::class, $request);
 
-        self::assertFalse($this->input->isXmlHttpRequest());
+        $this->assertFalse($this->input->isXmlHttpRequest());
 
         $request = new ServerRequest(
             'GET',
@@ -173,7 +163,7 @@ final class InputManagerTest extends TestCase
         );
         $this->container->bind(ServerRequestInterface::class, $request);
 
-        self::assertTrue($this->input->isXmlHttpRequest());
+        $this->assertTrue($this->input->isXmlHttpRequest());
     }
 
     #[DataProvider('isJsonExpectedProvider')]
@@ -185,11 +175,19 @@ final class InputManagerTest extends TestCase
             'GET',
             'http://domain.com/hello-world',
             $acceptHeader !== null ? ['Accept' => $acceptHeader] : [],
-            'php://input',
+            'php://input'
         );
         $this->container->bind(ServerRequestInterface::class, $request);
 
-        self::assertSame($expected, $input->isJsonExpected());
+        $this->assertSame($expected, $input->isJsonExpected());
+    }
+
+    public static function isJsonExpectedProvider(): \Traversable
+    {
+        yield [false, null];
+        yield [false, 'text/html'];
+        yield [true, 'application/json'];
+        yield [true, 'application/vnd.api+json'];
     }
 
     #[DataProvider('isJsonExpectedOnSoftMatchProvider')]
@@ -199,12 +197,20 @@ final class InputManagerTest extends TestCase
             'GET',
             'http://domain.com/hello-world',
             $acceptHeader !== null ? ['Accept' => $acceptHeader] : [],
-            'php://input',
+            'php://input'
         );
         $this->container->bind(ServerRequestInterface::class, $request);
 
-        self::assertFalse($this->input->isJsonExpected());
-        self::assertSame($expected, $this->input->isJsonExpected(true));
+        $this->assertFalse($this->input->isJsonExpected());
+        $this->assertSame($expected, $this->input->isJsonExpected(true));
+    }
+
+    public static function isJsonExpectedOnSoftMatchProvider(): \Traversable
+    {
+        yield [false, null];
+        yield [false, 'text/html'];
+        yield [true, 'text/json'];
+        yield [true, 'application/vnd.api+json'];
     }
 
     public function testRemoteIP(): void
@@ -213,24 +219,24 @@ final class InputManagerTest extends TestCase
             'GET',
             'http://domain.com/hello-world',
             body: 'php://input',
-            serverParams: ['REMOTE_ADDR' => '127.0.0.1'],
+            serverParams: ['REMOTE_ADDR' => '127.0.0.1']
         );
         $this->container->bind(ServerRequestInterface::class, $request);
 
-        self::assertSame('127.0.0.1', $this->input->remoteAddress());
+        $this->assertSame('127.0.0.1', $this->input->remoteAddress());
 
         $request = new ServerRequest(
             'GET',
             'http://domain.com/hello-world',
             ['Accept' => 'application/json'],
             'php://input',
-            serverParams: ['REMOTE_ADDR' => null],
+            serverParams: ['REMOTE_ADDR' => null]
         );
         $this->container->bind(ServerRequestInterface::class, $request);
 
-        self::assertTrue($this->input->isJsonExpected());
+        $this->assertTrue($this->input->isJsonExpected());
 
-        self::assertNull($this->input->remoteAddress());
+        $this->assertNull($this->input->remoteAddress());
     }
 
     public function testGetBag(): void
@@ -238,28 +244,28 @@ final class InputManagerTest extends TestCase
         $request = new ServerRequest(
             'GET',
             'http://domain.com/hello-world',
-            body: 'php://input',
+            body: 'php://input'
         );
         $this->container->bind(ServerRequestInterface::class, $request);
 
-        self::assertInstanceOf(ServerBag::class, $this->input->server);
-        self::assertInstanceOf(InputBag::class, $this->input->attributes);
-        self::assertInstanceOf(InputBag::class, $this->input->data);
-        self::assertInstanceOf(InputBag::class, $this->input->cookies);
-        self::assertInstanceOf(InputBag::class, $this->input->query);
-        self::assertInstanceOf(FilesBag::class, $this->input->files);
-        self::assertInstanceOf(HeadersBag::class, $this->input->headers);
+        $this->assertInstanceOf(ServerBag::class, $this->input->server);
+        $this->assertInstanceOf(InputBag::class, $this->input->attributes);
+        $this->assertInstanceOf(InputBag::class, $this->input->data);
+        $this->assertInstanceOf(InputBag::class, $this->input->cookies);
+        $this->assertInstanceOf(InputBag::class, $this->input->query);
+        $this->assertInstanceOf(FilesBag::class, $this->input->files);
+        $this->assertInstanceOf(HeadersBag::class, $this->input->headers);
 
-        self::assertInstanceOf(ServerBag::class, $this->input->server);
-        self::assertInstanceOf(InputBag::class, $this->input->attributes);
-        self::assertInstanceOf(InputBag::class, $this->input->data);
-        self::assertInstanceOf(InputBag::class, $this->input->cookies);
-        self::assertInstanceOf(InputBag::class, $this->input->query);
-        self::assertInstanceOf(FilesBag::class, $this->input->files);
-        self::assertInstanceOf(HeadersBag::class, $this->input->headers);
+        $this->assertInstanceOf(ServerBag::class, $this->input->server);
+        $this->assertInstanceOf(InputBag::class, $this->input->attributes);
+        $this->assertInstanceOf(InputBag::class, $this->input->data);
+        $this->assertInstanceOf(InputBag::class, $this->input->cookies);
+        $this->assertInstanceOf(InputBag::class, $this->input->query);
+        $this->assertInstanceOf(FilesBag::class, $this->input->files);
+        $this->assertInstanceOf(HeadersBag::class, $this->input->headers);
 
         $input = clone $this->input;
-        self::assertInstanceOf(ServerBag::class, $input->server);
+        $this->assertInstanceOf(ServerBag::class, $input->server);
     }
 
     public function testWrongBad(): void
@@ -268,7 +274,7 @@ final class InputManagerTest extends TestCase
         $request = new ServerRequest(
             'GET',
             'http://domain.com/hello-world',
-            body: 'php://input',
+            body: 'php://input'
         );
 
         $this->container->bind(ServerRequestInterface::class, $request);
@@ -280,49 +286,43 @@ final class InputManagerTest extends TestCase
         $this->container->bind(ServerRequestInterface::class, (new ServerRequest('GET', ''))->withParsedBody([
             'array' => [
                 'key' => [
-                    'name' => 'value',
-                ],
+                    'name' => 'value'
+                ]
             ],
-            'name'  => 'xx',
+            'name'  => 'xx'
         ])->withQueryParams([
             'name' => 'value',
-            'key'  => ['name' => 'hi'],
+            'key'  => ['name' => 'hi']
         ])->withAttribute('attr', 'value')->withCookieParams([
-            'cookie' => 'cookie-value',
+            'cookie' => 'cookie-value'
         ]));
 
-        self::assertSame('value', $this->input->data('array.key.name'));
-        self::assertSame('value', $this->input->post('array.key.name'));
+        $this->assertSame('value', $this->input->data('array.key.name'));
+        $this->assertSame('value', $this->input->post('array.key.name'));
 
-        self::assertSame('value', $this->input->query('name'));
-        self::assertSame('hi', $this->input->query('key.name'));
+        $this->assertSame('value', $this->input->query('name'));
+        $this->assertSame('hi', $this->input->query('key.name'));
 
-        self::assertSame('xx', $this->input->input('name'));
-        self::assertSame('hi', $this->input->input('key.name'));
-        self::assertSame('value', $this->input->attribute('attr'));
+        $this->assertSame('xx', $this->input->input('name'));
+        $this->assertSame('hi', $this->input->input('key.name'));
+        $this->assertSame('value', $this->input->attribute('attr'));
 
-        self::assertSame('cookie-value', $this->input->cookie('cookie'));
+        $this->assertSame('cookie-value', $this->input->cookie('cookie'));
     }
 
     public function testAddCustomInputBag(): void
     {
         $input = new InputManager($this->container, new HttpConfig(
-            ['inputBags' => ['test' => ['class'  => InputBag::class, 'source' => 'getQueryParams']]],
+            ['inputBags' => ['test' => ['class'  => InputBag::class, 'source' => 'getQueryParams']]]
         ));
 
         $request = new ServerRequest(
             'GET',
             'http://domain.com/hello-world',
-            body: 'php://input',
+            body: 'php://input'
         );
         $this->container->bind(ServerRequestInterface::class, $request);
 
-        self::assertInstanceOf(InputBag::class, $input->test);
-    }
-
-    protected function setUp(): void
-    {
-        $this->container = new Container();
-        $this->input = new InputManager($this->container);
+        $this->assertInstanceOf(InputBag::class, $input->test);
     }
 }

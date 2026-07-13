@@ -11,22 +11,35 @@ use Spiral\Http\Exception\InputException;
 use Spiral\Http\Request\InputManager;
 use Nyholm\Psr7\ServerRequest;
 
-final class ServerTest extends TestCase
+class ServerTest extends TestCase
 {
-    private Container $container;
-    private InputManager $input;
+    /**
+     * @var Container
+     */
+    private $container;
+
+    /**
+     * @var InputManager
+     */
+    private $input;
+
+    public function setUp(): void
+    {
+        $this->container = new Container();
+        $this->input = new InputManager($this->container);
+    }
 
     public function testShortcut(): void
     {
         $request = new ServerRequest(
             'GET',
             '',
-            serverParams: ['PATH' => 'sample'],
+            serverParams: ['PATH' => 'sample']
         );
 
         $this->container->bind(ServerRequestInterface::class, $request);
 
-        self::assertSame('sample', $this->input->server('path'));
+        $this->assertSame('sample', $this->input->server('path'));
     }
 
     public function testHas(): void
@@ -34,14 +47,14 @@ final class ServerTest extends TestCase
         $request = new ServerRequest(
             'GET',
             '',
-            serverParams: ['PATH' => 'sample'],
+            serverParams: ['PATH' => 'sample']
         );
 
         $this->container->bind(ServerRequestInterface::class, $request);
 
-        self::assertTrue($this->input->server->has('path'));
-        self::assertFalse($this->input->server->has('another'));
-        self::assertTrue($this->input->server->has('path'));
+        $this->assertTrue($this->input->server->has('path'));
+        $this->assertFalse($this->input->server->has('another'));
+        $this->assertTrue($this->input->server->has('path'));
     }
 
     public function testGet(): void
@@ -49,13 +62,13 @@ final class ServerTest extends TestCase
         $request = new ServerRequest(
             'GET',
             '',
-            serverParams: ['PATH' => 'sample'],
+            serverParams: ['PATH' => 'sample']
         );
 
         $this->container->bind(ServerRequestInterface::class, $request);
 
-        self::assertSame('sample', $this->input->server->get('path'));
-        self::assertNull($this->input->server->get('other'));
+        $this->assertSame('sample', $this->input->server->get('path'));
+        $this->assertSame(null, $this->input->server->get('other'));
     }
 
     public function testGetDot(): void
@@ -63,13 +76,13 @@ final class ServerTest extends TestCase
         $request = new ServerRequest(
             'GET',
             '',
-            serverParams: ['PATH' => ['SAMPLE' => 1]],
+            serverParams: ['PATH' => ['SAMPLE' => 1]]
         );
 
         $this->container->bind(ServerRequestInterface::class, $request);
 
-        self::assertSame(1, $this->input->server->get('path.SAMPLE'));
-        self::assertNull($this->input->server->get('path.another'));
+        $this->assertSame(1, $this->input->server->get('path.SAMPLE'));
+        $this->assertSame(null, $this->input->server->get('path.another'));
     }
 
     public function testAll(): void
@@ -77,12 +90,12 @@ final class ServerTest extends TestCase
         $request = new ServerRequest(
             'GET',
             '',
-            serverParams: ['PATH' => 'sample'],
+            serverParams: ['PATH' => 'sample']
         );
 
         $this->container->bind(ServerRequestInterface::class, $request);
 
-        self::assertSame([
+        $this->assertSame([
             'PATH' => 'sample',
         ], $this->input->server->all());
     }
@@ -92,16 +105,16 @@ final class ServerTest extends TestCase
         $request = new ServerRequest(
             'GET',
             '',
-            serverParams: ['PATH' => 'sample'],
+            serverParams: ['PATH' => 'sample']
         );
 
         $this->container->bind(ServerRequestInterface::class, $request);
 
-        self::assertSame([
+        $this->assertSame([
             'PATH' => 'sample',
         ], $this->input->server->all());
 
-        self::assertSame([
+        $this->assertSame([
             'PATH' => 'sample',
         ], $this->input->server->fetch(['path']));
     }
@@ -111,16 +124,19 @@ final class ServerTest extends TestCase
         $request = new ServerRequest(
             'GET',
             '',
-            serverParams: ['PATH' => 'sample'],
+            serverParams: ['PATH' => 'sample']
         );
 
         $this->container->bind(ServerRequestInterface::class, $request);
 
-        self::assertSame([
+        $this->assertSame([
             'PATH' => 'sample',
-        ], $this->input->server->fetch(['path'], true));
+        ], $this->input->server->fetch(['path'], true, null));
 
-        self::assertSame(['PATH' => 'sample', 'OTHER' => null], $this->input->server->fetch(['path', 'other'], true));
+        $this->assertSame(
+            ['PATH' => 'sample', 'OTHER' => null],
+            $this->input->server->fetch(['path', 'other'], true, null)
+        );
     }
 
     public function testServerBagCount(): void
@@ -128,12 +144,12 @@ final class ServerTest extends TestCase
         $request = new ServerRequest(
             'GET',
             '',
-            serverParams: ['PATH' => 'sample'],
+            serverParams: ['PATH' => 'sample']
         );
 
         $this->container->bind(ServerRequestInterface::class, $request);
 
-        self::assertCount(1, $this->input->server);
+        $this->assertSame(1, $this->input->server->count());
     }
 
     public function testServerBagArrayAccess(): void
@@ -141,13 +157,13 @@ final class ServerTest extends TestCase
         $request = new ServerRequest(
             'GET',
             '',
-            serverParams: ['PATH' => 'sample'],
+            serverParams: ['PATH' => 'sample']
         );
 
         $this->container->bind(ServerRequestInterface::class, $request);
 
-        self::assertSame('sample', $this->input->server['path']);
-        self::assertArrayNotHasKey('other', $this->input->server);
+        $this->assertSame('sample', $this->input->server['path']);
+        $this->assertFalse(isset($this->input->server['other']));
     }
 
     public function testDebugInfo(): void
@@ -155,12 +171,15 @@ final class ServerTest extends TestCase
         $request = new ServerRequest(
             'GET',
             '',
-            serverParams: ['PATH' => 'sample'],
+            serverParams: ['PATH' => 'sample']
         );
 
         $this->container->bind(ServerRequestInterface::class, $request);
 
-        self::assertSame(['PATH' => 'sample',], $this->input->server->__debugInfo());
+        $this->assertSame(
+            ['PATH' => 'sample',],
+            $this->input->server->__debugInfo()
+        );
     }
 
     public function testIterator(): void
@@ -168,12 +187,15 @@ final class ServerTest extends TestCase
         $request = new ServerRequest(
             'GET',
             '',
-            serverParams: ['PATH' => 'sample'],
+            serverParams: ['PATH' => 'sample']
         );
 
         $this->container->bind(ServerRequestInterface::class, $request);
 
-        self::assertSame(['PATH' => 'sample',], \iterator_to_array($this->input->server));
+        $this->assertSame(
+            ['PATH' => 'sample',],
+            iterator_to_array($this->input->server)
+        );
     }
 
     public function testSetAndExceptions(): void
@@ -183,7 +205,7 @@ final class ServerTest extends TestCase
         $request = new ServerRequest(
             'GET',
             '',
-            serverParams: ['PATH' => 'sample'],
+            serverParams: ['PATH' => 'sample']
         );
 
         $this->container->bind(ServerRequestInterface::class, $request);
@@ -197,16 +219,10 @@ final class ServerTest extends TestCase
         $request = new ServerRequest(
             'GET',
             '',
-            serverParams: ['PATH' => 'sample'],
+            serverParams: ['PATH' => 'sample']
         );
 
         $this->container->bind(ServerRequestInterface::class, $request);
         $this->input->server->offsetUnset('a');
-    }
-
-    protected function setUp(): void
-    {
-        $this->container = new Container();
-        $this->input = new InputManager($this->container);
     }
 }

@@ -12,27 +12,40 @@ use Spiral\Http\Request\InputManager;
 use Nyholm\Psr7\ServerRequest;
 use Nyholm\Psr7\UploadedFile;
 
-final class FilesTest extends TestCase
+class FilesTest extends TestCase
 {
-    private Container $container;
-    private InputManager $input;
+    /**
+     * @var Container
+     */
+    private $container;
+
+    /**
+     * @var InputManager
+     */
+    private $input;
+
+    public function setUp(): void
+    {
+        $this->container = new Container();
+        $this->input = new InputManager($this->container);
+    }
 
     public function testShortcut(): void
     {
         $request = new ServerRequest('GET', '');
         $request = $request->withUploadedFiles([
             'file' => new UploadedFile(
-                \fopen(__FILE__, 'r'),
-                \filesize(__FILE__),
+                fopen(__FILE__, 'r'),
+                filesize(__FILE__),
                 0,
-                __FILE__,
-            ),
+                __FILE__
+            )
         ]);
 
         $this->container->bind(ServerRequestInterface::class, $request);
 
-        self::assertInstanceOf(UploadedFileInterface::class, $this->input->file('file'));
-        self::assertNull($this->input->file('other'));
+        $this->assertInstanceOf(UploadedFileInterface::class, $this->input->file('file'));
+        $this->assertSame(null, $this->input->file('other'));
     }
 
     public function testGetFilename(): void
@@ -40,43 +53,38 @@ final class FilesTest extends TestCase
         $request = new ServerRequest('GET', '');
         $request = $request->withUploadedFiles([
             'file' => new UploadedFile(
-                \fopen(__FILE__, 'r'),
-                \filesize(__FILE__),
+                fopen(__FILE__, 'r'),
+                filesize(__FILE__),
                 0,
-                __FILE__,
-            ),
+                __FILE__
+            )
         ]);
 
         $this->container->bind(ServerRequestInterface::class, $request);
 
 
         $filename = $this->input->files->getFilename('file');
-        self::assertFileExists($filename);
+        $this->assertTrue(file_exists($filename));
 
-        self::assertSame(\file_get_contents(__FILE__), \file_get_contents($filename));
+        $this->assertSame(file_get_contents(__FILE__), file_get_contents($filename));
     }
+
 
     public function testGetFilenameMissing(): void
     {
         $request = new ServerRequest('GET', '');
         $request = $request->withUploadedFiles([
             'file' => new UploadedFile(
-                \fopen(__FILE__, 'r'),
-                \filesize(__FILE__),
+                fopen(__FILE__, 'r'),
+                filesize(__FILE__),
                 0,
-                __FILE__,
-            ),
+                __FILE__
+            )
         ]);
 
         $this->container->bind(ServerRequestInterface::class, $request);
 
         $filename = $this->input->files->getFilename('file2');
-        self::assertNull($filename);
-    }
-
-    protected function setUp(): void
-    {
-        $this->container = new Container();
-        $this->input = new InputManager($this->container);
+        $this->assertNull($filename);
     }
 }

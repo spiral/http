@@ -31,9 +31,14 @@ final class AcceptHeader implements \Stringable
         }
     }
 
+    public function __toString(): string
+    {
+        return \implode(', ', $this->getAll());
+    }
+
     public static function fromString(string $raw): self
     {
-        $header = new self();
+        $header = new static();
 
         $parts = \explode(',', $raw);
         foreach ($parts as $part) {
@@ -73,7 +78,7 @@ final class AcceptHeader implements \Stringable
             /**
              * Sort item in descending order.
              */
-            \uasort($this->items, static fn(AcceptHeaderItem $a, AcceptHeaderItem $b): int => self::compare($a, $b) * -1);
+            \uasort($this->items, static fn (AcceptHeaderItem $a, AcceptHeaderItem $b) => self::compare($a, $b) * -1);
 
             $this->sorted = true;
         }
@@ -81,9 +86,20 @@ final class AcceptHeader implements \Stringable
         return \array_values($this->items);
     }
 
-    public function __toString(): string
+    /**
+     * Add new item to list.
+     */
+    private function addItem(AcceptHeaderItem|string $item): void
     {
-        return \implode(', ', $this->getAll());
+        if (\is_string($item)) {
+            $item = AcceptHeaderItem::fromString($item);
+        }
+
+        $value = \strtolower($item->getValue());
+        if ($value !== '' && (!$this->has($value) || self::compare($item, $this->get($value)) === 1)) {
+            $this->sorted = false;
+            $this->items[$value] = $item;
+        }
     }
 
     /**
@@ -97,7 +113,7 @@ final class AcceptHeader implements \Stringable
             if (\count($a->getParams()) === \count($b->getParams())) {
                 // If quality and params then check for specific type or subtype.
                 // Means */* or * has less weight.
-                return self::compareValue($a->getValue(), $b->getValue());
+                return static::compareValue($a->getValue(), $b->getValue());
             }
 
             return \count($a->getParams()) <=> \count($b->getParams());
@@ -118,13 +134,13 @@ final class AcceptHeader implements \Stringable
             [$typeB, $subtypeB] = \explode('/', $b, 2);
 
             if ($typeA === $typeB) {
-                return self::compareAtomic($subtypeA, $subtypeB);
+                return static::compareAtomic($subtypeA, $subtypeB);
             }
 
-            return self::compareAtomic($typeA, $typeB);
+            return static::compareAtomic($typeA, $typeB);
         }
 
-        return self::compareAtomic($a, $b);
+        return static::compareAtomic($a, $b);
     }
 
     private static function compareAtomic(string $a, string $b): int
@@ -150,21 +166,5 @@ final class AcceptHeader implements \Stringable
         }
 
         return 0;
-    }
-
-    /**
-     * Add new item to list.
-     */
-    private function addItem(AcceptHeaderItem|string $item): void
-    {
-        if (\is_string($item)) {
-            $item = AcceptHeaderItem::fromString($item);
-        }
-
-        $value = \strtolower($item->getValue());
-        if ($value !== '' && (!$this->has($value) || self::compare($item, $this->get($value)) === 1)) {
-            $this->sorted = false;
-            $this->items[$value] = $item;
-        }
     }
 }

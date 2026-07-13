@@ -25,6 +25,25 @@ final class AcceptHeaderItem implements \Stringable
         $this->setParams($params);
     }
 
+    public function __toString(): string
+    {
+        if ($this->value === '') {
+            return '';
+        }
+
+        $parts = [$this->value];
+
+        if ($this->quality < 1) {
+            $parts[] = \sprintf('q=%s', $this->quality);
+        }
+
+        foreach ($this->getParams() as $name => $value) {
+            $parts[] = \sprintf('%s=%s', $name, $value);
+        }
+
+        return \implode('; ', $parts);
+    }
+
     /**
      * Parse accept header string.
      */
@@ -48,7 +67,7 @@ final class AcceptHeaderItem implements \Stringable
             $value = \trim($parsed[1]);
 
             if (\strcasecmp($name, 'q') === 0) {
-                $quality = (float) $value;
+                $quality = (float)$value;
             } else {
                 $params[$name] = $value;
             }
@@ -65,7 +84,7 @@ final class AcceptHeaderItem implements \Stringable
         return $item;
     }
 
-    public function getValue(): string
+    public function getValue(): ?string
     {
         return $this->value;
     }
@@ -96,25 +115,6 @@ final class AcceptHeaderItem implements \Stringable
         return $this->params;
     }
 
-    public function __toString(): string
-    {
-        if ($this->value === '') {
-            return '';
-        }
-
-        $parts = [$this->value];
-
-        if ($this->quality < 1) {
-            $parts[] = \sprintf('q=%s', $this->quality);
-        }
-
-        foreach ($this->getParams() as $name => $value) {
-            $parts[] = \sprintf('%s=%s', $name, $value);
-        }
-
-        return \implode('; ', $parts);
-    }
-
     private function setValue(string $value): void
     {
         $this->value = \trim($value);
@@ -133,7 +133,7 @@ final class AcceptHeaderItem implements \Stringable
             }
 
             $name = \trim($name);
-            $value = \trim((string) $value);
+            $value = \trim((string)$value);
 
             if ($name === '' || $value === '') {
                 continue;

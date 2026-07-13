@@ -10,23 +10,36 @@ use Spiral\Core\Container;
 use Spiral\Http\Request\InputManager;
 use Nyholm\Psr7\ServerRequest;
 
-final class SlicesTest extends TestCase
+class SlicesTest extends TestCase
 {
-    private Container $container;
-    private InputManager $input;
+    /**
+     * @var Container
+     */
+    private $container;
+
+    /**
+     * @var InputManager
+     */
+    private $input;
+
+    public function setUp(): void
+    {
+        $this->container = new Container();
+        $this->input = new InputManager($this->container);
+    }
 
     public function testNoSlice(): void
     {
         $this->container->bind(ServerRequestInterface::class, (new ServerRequest('GET', ''))->withParsedBody([
             'array' => [
-                'key' => 'value',
-            ],
+                'key' => 'value'
+            ]
         ]));
 
-        self::assertSame([
+        $this->assertSame([
             'array' => [
-                'key' => 'value',
-            ],
+                'key' => 'value'
+            ]
         ], $this->input->data->all());
     }
 
@@ -34,12 +47,12 @@ final class SlicesTest extends TestCase
     {
         $this->container->bind(ServerRequestInterface::class, (new ServerRequest('GET', ''))->withParsedBody([
             'array' => [
-                'key' => 'value',
-            ],
+                'key' => 'value'
+            ]
         ]));
 
-        self::assertSame([
-            'key' => 'value',
+        $this->assertSame([
+            'key' => 'value'
         ], $this->input->withPrefix('array')->data->all());
     }
 
@@ -47,11 +60,11 @@ final class SlicesTest extends TestCase
     {
         $this->container->bind(ServerRequestInterface::class, (new ServerRequest('GET', ''))->withParsedBody([
             'array' => [
-                'key' => 'value',
-            ],
+                'key' => 'value'
+            ]
         ]));
 
-        self::assertSame([], $this->input->withPrefix('other')->data->all());
+        $this->assertSame([], $this->input->withPrefix('other')->data->all());
     }
 
     public function testMultiple(): void
@@ -59,46 +72,40 @@ final class SlicesTest extends TestCase
         $this->container->bind(ServerRequestInterface::class, (new ServerRequest('GET', ''))->withParsedBody([
             'array' => [
                 'key' => [
-                    'name' => 'value',
-                ],
-            ],
+                    'name' => 'value'
+                ]
+            ]
         ]));
 
-        self::assertSame([
-            'name' => 'value',
+        $this->assertSame([
+            'name' => 'value'
         ], $this->input->withPrefix('array.key')->data->all());
 
         $input = $this->input->withPrefix('array');
 
-        self::assertSame([
+        $this->assertSame([
             'key' => [
-                'name' => 'value',
-            ],
+                'name' => 'value'
+            ]
         ], $input->data->all());
 
         $input = $input->withPrefix('key');
 
-        self::assertSame([
-            'name' => 'value',
+        $this->assertSame([
+            'name' => 'value'
         ], $input->data->all());
 
         $input = $input->withPrefix('', false);
 
-        self::assertSame([
+        $this->assertSame([
             'array' => [
                 'key' => [
-                    'name' => 'value',
-                ],
-            ],
+                    'name' => 'value'
+                ]
+            ]
         ], $input->data->all());
 
-        self::assertSame('value', $input->data('array.key.name'));
-        self::assertSame('value', $input->post('array.key.name'));
-    }
-
-    protected function setUp(): void
-    {
-        $this->container = new Container();
-        $this->input = new InputManager($this->container);
+        $this->assertSame('value', $input->data('array.key.name'));
+        $this->assertSame('value', $input->post('array.key.name'));
     }
 }

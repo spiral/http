@@ -25,35 +25,23 @@ final class Http implements RequestHandlerInterface
 {
     private ?RequestHandlerInterface $handler = null;
     private readonly TracerFactoryInterface $tracerFactory;
-    private readonly Pipeline|LazyPipeline $pipeline;
 
     public function __construct(
         private readonly HttpConfig $config,
-        Pipeline|LazyPipeline $pipeline,
+        private readonly Pipeline $pipeline,
         private readonly ResponseFactoryInterface $responseFactory,
         private readonly ContainerInterface $container,
-        ?TracerFactoryInterface $tracerFactory = null,
-        private readonly ?EventDispatcherInterface $dispatcher = null,
+        ?TracerFactoryInterface $tracerFactory = null
     ) {
-        if ($pipeline instanceof Pipeline) {
-            foreach ($this->config->getMiddleware() as $middleware) {
-                $pipeline->pushMiddleware($this->container->get($middleware));
-            }
-        } else {
-            $pipeline = $pipeline->withAddedMiddleware(
-                ...$this->config->getMiddleware(),
-            );
+        foreach ($this->config->getMiddleware() as $middleware) {
+            $this->pipeline->pushMiddleware($this->container->get($middleware));
         }
 
-        $this->pipeline = $pipeline;
         $scope = $this->container instanceof ScopeInterface ? $this->container : new Container();
         $this->tracerFactory = $tracerFactory ?? new NullTracerFactory($scope);
     }
 
-    /**
-     * @internal
-     */
-    public function getPipeline(): Pipeline|LazyPipeline
+    public function getPipeline(): Pipeline
     {
         return $this->pipeline;
     }
@@ -72,10 +60,12 @@ final class Http implements RequestHandlerInterface
      */
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
-        $callback = function (SpanInterface $span, CurrentRequest $currentRequest) use ($request): ResponseInterface {
-            $currentRequest->set($request);
+        $callback = function (SpanInterface $span) use ($request): ResponseInterface {
+            $dispatcher = $this->container->has(EventDispatcherInterface::class)
+                ? $this->container->get(EventDispatcherInterface::class)
+                : null;
 
-            $this->dispatcher?->dispatch(new RequestReceived($request));
+            $dispatcher?->dispatch(new RequestReceived($request));
 
             if ($this->handler === null) {
                 throw new HttpException('Unable to run HttpCore, no handler is set.');
@@ -86,15 +76,15 @@ final class Http implements RequestHandlerInterface
             $span
                 ->setAttribute(
                     'http.status_code',
-                    $response->getStatusCode(),
+                    $response->getStatusCode()
                 )
                 ->setAttribute(
                     'http.response_content_length',
-                    $response->getHeaderLine('Content-Length') ?: $response->getBody()->getSize(),
+                    $response->getHeaderLine('Content-Length') ?: $response->getBody()->getSize()
                 )
                 ->setStatus($response->getStatusCode() < 500 ? 'OK' : 'ERROR');
 
-            $this->dispatcher?->dispatch(new RequestHandled($request, $response));
+            $dispatcher?->dispatch(new RequestHandled($request, $response));
 
             return $response;
         };
@@ -103,18 +93,15 @@ final class Http implements RequestHandlerInterface
 
         /** @var ResponseInterface $response */
         $response = $tracer->trace(
-            name: \sprintf('%s %s', $request->getMethod(), (string) $request->getUri()),
+            name: \sprintf('%s %s', $request->getMethod(), (string)$request->getUri()),
             callback: $callback,
             attributes: [
                 'http.method' => $request->getMethod(),
-                'http.url' => (string) $request->getUri(),
-                'http.headers' => \array_map(
-                    static fn(array $values): string => \implode(',', $values),
-                    $request->getHeaders(),
-                ),
+                'http.url' => $request->getUri(),
+                'http.headers' => $request->getHeaders(),
             ],
             scoped: true,
-            traceKind: TraceKind::SERVER,
+            traceKind: TraceKind::SERVER
         );
 
         foreach ($tracer->getContext() as $key => $value) {

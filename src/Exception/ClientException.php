@@ -13,7 +13,6 @@ class ClientException extends HttpException
      * Most common codes.
      */
     public const BAD_DATA = 400;
-
     public const UNAUTHORIZED = 401;
     public const FORBIDDEN = 403;
     public const NOT_FOUND = 404;

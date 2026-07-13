@@ -15,8 +15,9 @@ use Spiral\Http\Header\AcceptHeader;
 final class PlainRenderer implements RendererInterface
 {
     public function __construct(
-        private readonly ResponseFactoryInterface $responseFactory,
-    ) {}
+        private readonly ResponseFactoryInterface $responseFactory
+    ) {
+    }
 
     public function renderException(Request $request, int $code, \Throwable $exception): Response
     {

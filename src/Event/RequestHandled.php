@@ -11,6 +11,7 @@ final class RequestHandled
 {
     public function __construct(
         public readonly ServerRequestInterface $request,
-        public readonly ResponseInterface $response,
-    ) {}
+        public readonly ResponseInterface $response
+    ) {
+    }
 }

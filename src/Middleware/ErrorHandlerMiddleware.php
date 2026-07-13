@@ -32,7 +32,8 @@ final class ErrorHandlerMiddleware implements MiddlewareInterface
         private readonly ResponseFactoryInterface $responseFactory,
         private readonly ExceptionHandlerInterface $errorHandler,
         private readonly Verbosity $verbosity = Verbosity::VERBOSE,
-    ) {}
+    ) {
+    }
 
     /**
      * @psalm-suppress UnusedVariable
@@ -73,11 +74,11 @@ final class ErrorHandlerMiddleware implements MiddlewareInterface
         }
 
         $response->getBody()->write(
-            (string) $renderer?->render(
+            (string)$renderer?->render(
                 exception: $e,
                 verbosity: $this->verbosity,
-                format: $format,
-            ),
+                format: $format
+            )
         );
 
         return $response;
@@ -111,8 +112,8 @@ final class ErrorHandlerMiddleware implements MiddlewareInterface
                 $request->getUri()->getPath(),
                 $code,
                 $message ?: '-not specified-',
-                $request->getServerParams()['REMOTE_ADDR'] ?? '127.0.0.1',
-            ),
+                $request->getServerParams()['REMOTE_ADDR'] ?? '127.0.0.1'
+            )
         );
     }
 }

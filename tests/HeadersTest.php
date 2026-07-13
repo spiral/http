@@ -10,10 +10,23 @@ use Spiral\Core\Container;
 use Spiral\Http\Request\InputManager;
 use Nyholm\Psr7\ServerRequest;
 
-final class HeadersTest extends TestCase
+class HeadersTest extends TestCase
 {
-    private Container $container;
-    private InputManager $input;
+    /**
+     * @var Container
+     */
+    private $container;
+
+    /**
+     * @var InputManager
+     */
+    private $input;
+
+    public function setUp(): void
+    {
+        $this->container = new Container();
+        $this->input = new InputManager($this->container);
+    }
 
     public function testShortcut(): void
     {
@@ -22,7 +35,7 @@ final class HeadersTest extends TestCase
         $request = $request->withAddedHeader('Path', 'value');
         $this->container->bind(ServerRequestInterface::class, $request);
 
-        self::assertSame('value', $this->input->header('path'));
+        $this->assertSame('value', $this->input->header('path'));
     }
 
     public function testHas(): void
@@ -32,8 +45,8 @@ final class HeadersTest extends TestCase
         $request = $request->withAddedHeader('Path', 'value');
         $this->container->bind(ServerRequestInterface::class, $request);
 
-        self::assertTrue($this->input->headers->has('path'));
-        self::assertTrue($this->input->headers->has('Path'));
+        $this->assertTrue($this->input->headers->has('path'));
+        $this->assertTrue($this->input->headers->has('Path'));
     }
 
     public function testFetch(): void
@@ -44,8 +57,8 @@ final class HeadersTest extends TestCase
         $request = $request->withAddedHeader('Path', 'value2');
         $this->container->bind(ServerRequestInterface::class, $request);
 
-        self::assertSame([
-            'Path' => 'value,value2',
+        $this->assertSame([
+            'Path' => 'value,value2'
         ], $this->input->headers->fetch(['path']));
     }
 
@@ -57,16 +70,13 @@ final class HeadersTest extends TestCase
         $request = $request->withAddedHeader('Path', 'value2');
         $this->container->bind(ServerRequestInterface::class, $request);
 
-        self::assertSame([
-            'Path' => ['value', 'value2'],
+        $this->assertSame([
+            'Path' => ['value', 'value2']
         ], $this->input->headers->fetch(['path'], false, true, null));
 
-        self::assertSame(['value', 'value2'], $this->input->headers->get('path', null, false));
-    }
-
-    protected function setUp(): void
-    {
-        $this->container = new Container();
-        $this->input = new InputManager($this->container);
+        $this->assertSame(
+            ['value', 'value2'],
+            $this->input->headers->get('path', null, false)
+        );
     }
 }

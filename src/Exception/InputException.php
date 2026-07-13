@@ -7,4 +7,6 @@ namespace Spiral\Http\Exception;
 /**
  * Exceptions in input manager.
  */
-class InputException extends HttpException {}
+class InputException extends HttpException
+{
+}

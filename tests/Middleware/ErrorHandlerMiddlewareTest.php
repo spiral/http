@@ -7,7 +7,6 @@ namespace Spiral\Tests\Http\Middleware;
 use Nyholm\Psr7\Factory\Psr17Factory;
 use Nyholm\Psr7\ServerRequest;
 use PHPUnit\Framework\Attributes\DataProvider;
-use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
@@ -24,45 +23,46 @@ use Spiral\Router\Exception\RouterException;
 
 final class ErrorHandlerMiddlewareTest extends TestCase
 {
-    private MockObject&RequestHandlerInterface $handler;
+    private RequestHandlerInterface $handler;
     private ServerRequestInterface $request;
-    private MockObject&ExceptionHandlerInterface $exceptionHandler;
-    private MockObject&LoggerInterface $logger;
-    private MockObject&RendererInterface $renderer;
+    private ExceptionHandlerInterface $exceptionHandler;
+    private LoggerInterface $logger;
+    private RendererInterface $renderer;
 
-    public static function exceptionsDataProvider(): \Traversable
+    protected function setUp(): void
     {
-        yield [new ClientException(message: 'some error'), 400];
-        yield [new RouterException(message: 'some error'), 404];
-        yield [new \Error('some error', 555), 500];
-        yield [new \Error('some error'), 500];
+        $this->request = new ServerRequest('GET', '/');
+        $this->logger = $this->createMock(LoggerInterface::class);
+        $this->handler = $this->createMock(RequestHandlerInterface::class);
+        $this->exceptionHandler = $this->createMock(ExceptionHandlerInterface::class);
+        $this->renderer = $this->createMock(RendererInterface::class);
     }
 
     #[DataProvider('exceptionsDataProvider')]
     public function testHandleExceptionWithDebugFalse(\Throwable $e, int $code): void
     {
         $this->handler
-            ->expects(self::once())
+            ->expects($this->once())
             ->method('handle')
             ->with($this->request)
             ->willThrowException($e);
 
         $this->exceptionHandler
-            ->expects(self::once())
+            ->expects($this->once())
             ->method('report')
             ->with($e);
 
         $this->logger
-            ->expects(self::once())
+            ->expects($this->once())
             ->method('error');
 
         $this->renderer
-            ->expects(self::once())
+            ->expects($this->once())
             ->method('renderException')
             ->with($this->request, $code, $e);
 
         $this->exceptionHandler
-            ->expects(self::never())
+            ->expects($this->never())
             ->method('getRenderer');
 
         $middleware = new ErrorHandlerMiddleware(
@@ -70,7 +70,7 @@ final class ErrorHandlerMiddlewareTest extends TestCase
             $this->renderer,
             new Psr17Factory(),
             $this->exceptionHandler,
-            Verbosity::BASIC,
+            Verbosity::BASIC
         );
         $middleware->setLogger($this->logger);
 
@@ -82,32 +82,32 @@ final class ErrorHandlerMiddlewareTest extends TestCase
     {
         $renderer = $this->createMock(ExceptionRendererInterface::class);
         $renderer
-            ->expects(self::once())
+            ->expects($this->once())
             ->method('render')
             ->with($e, Verbosity::DEBUG);
 
         $this->handler
-            ->expects(self::once())
+            ->expects($this->once())
             ->method('handle')
             ->with($this->request)
             ->willThrowException($e);
 
         $this->exceptionHandler
-            ->expects(self::once())
+            ->expects($this->once())
             ->method('report')
             ->with($e);
 
         $this->exceptionHandler
-            ->expects(self::once())
+            ->expects($this->once())
             ->method('getRenderer')
             ->willReturn($renderer);
 
         $this->logger
-            ->expects(self::never())
+            ->expects($this->never())
             ->method('error');
 
         $this->renderer
-            ->expects(self::never())
+            ->expects($this->never())
             ->method('renderException');
 
         $middleware = new ErrorHandlerMiddleware(
@@ -115,13 +115,13 @@ final class ErrorHandlerMiddlewareTest extends TestCase
             $this->renderer,
             new Psr17Factory(),
             $this->exceptionHandler,
-            Verbosity::DEBUG,
+            Verbosity::DEBUG
         );
         $middleware->setLogger($this->logger);
 
         $response = $middleware->process($this->request, $this->handler);
 
-        self::assertSame($code, $response->getStatusCode());
+        $this->assertSame($code, $response->getStatusCode());
     }
 
     #[DataProvider('exceptionsDataProvider')]
@@ -129,53 +129,52 @@ final class ErrorHandlerMiddlewareTest extends TestCase
     {
         $renderer = $this->createMock(ExceptionRendererInterface::class);
         $renderer
-            ->expects(self::once())
+            ->expects($this->once())
             ->method('render')
             ->with($e, Verbosity::VERBOSE);
 
         $this->handler
-            ->expects(self::once())
+            ->expects($this->once())
             ->method('handle')
             ->with($this->request)
             ->willThrowException($e);
 
         $this->exceptionHandler
-            ->expects(self::once())
+            ->expects($this->once())
             ->method('report')
             ->with($e);
 
         $this->exceptionHandler
-            ->expects(self::once())
+            ->expects($this->once())
             ->method('getRenderer')
             ->willReturn($renderer);
 
         $this->logger
-            ->expects(self::never())
+            ->expects($this->never())
             ->method('error');
 
         $this->renderer
-            ->expects(self::never())
+            ->expects($this->never())
             ->method('renderException');
 
         $middleware = new ErrorHandlerMiddleware(
             new EnvSuppressErrors(DebugMode::Enabled),
             $this->renderer,
             new Psr17Factory(),
-            $this->exceptionHandler,
+            $this->exceptionHandler
         );
         $middleware->setLogger($this->logger);
 
         $response = $middleware->process($this->request, $this->handler);
 
-        self::assertSame($code, $response->getStatusCode());
+        $this->assertSame($code, $response->getStatusCode());
     }
 
-    protected function setUp(): void
+    public static function exceptionsDataProvider(): \Traversable
     {
-        $this->request = new ServerRequest('GET', '/');
-        $this->logger = $this->createMock(LoggerInterface::class);
-        $this->handler = $this->createMock(RequestHandlerInterface::class);
-        $this->exceptionHandler = $this->createMock(ExceptionHandlerInterface::class);
-        $this->renderer = $this->createMock(RendererInterface::class);
+        yield [new ClientException(message: 'some error'), 400];
+        yield [new RouterException(message: 'some error'), 404];
+        yield [new \Error('some error', 555), 500];
+        yield [new \Error('some error'), 500];
     }
 }
