@@ -7,7 +7,7 @@ namespace Spiral\Tests\Http;
 use Psr\Http\Message\StreamInterface;
 use Spiral\Streams\StreamableInterface;
 
-final class Streamable implements StreamableInterface
+class Streamable implements StreamableInterface
 {
     public function __construct(private readonly StreamInterface $stream) {}
 

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Spiral\Tests\Http;
 
-final class Json implements \JsonSerializable
+class Json implements \JsonSerializable
 {
     public function __construct(private $data) {}
 
