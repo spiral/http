@@ -2,7 +2,6 @@
     "name": "spiral/http",
     "type": "library",
     "description": "HTTP Request pipeline",
-    "keywords": ["spiral", "http", "middleware", "psr-7", "psr-15", "psr-17"],
     "license": "MIT",
     "funding": [
         {
@@ -34,7 +33,7 @@
         }
     ],
     "require": {
-        "php": ">=8.2",
+        "php": ">=8.1",
         "ext-json": "*",
         "ext-mbstring": "*",
         "spiral/core": "^3.18.0",
@@ -51,7 +50,7 @@
         "phpunit/phpunit": "^10.5.41",
         "mockery/mockery": "^1.6.12",
         "nyholm/psr7": "^1.8",
-        "vimeo/psalm": "^7.0.2"
+        "vimeo/psalm": "^6.0"
     },
     "autoload": {
         "psr-4": {
